@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <div class="register">
+            <h2>Registration Form</h2>
+            <form method="POST" action="/register">
+                <label for="username">Username:</label><br>
+                <input type="text" id="username" name="username" required><br><br>
+
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" name="password" required><br><br>
+
+                <label for="confirm_password">Confirm password:</label><br>
+                <input type="password" id="confirm_password" name="confirm_password" required><br><br>
+
+                <label>Choose department:</label><br><br>
+                <label><input type="radio" name="role" required value="management">Management</label><br>
+                <label><input type="radio" name="role" required value="production">Production</label><br>
+                <label><input type="radio" name="role" required value="quality_control">Quality control</label><br>
+                <label><input type="radio" name="role" required value="hr">HR</label><br>
+                <label><input type="radio" name="role" required value="logistic">Logistic</label><br>
+                <label><input type="radio" name="role" required value="financial">Financial</label><br>
+                <label><input type="radio" name="role" required value="programmer">Programmer</label><br>
+                <label><input type="radio" name="role" required value="it">IT</label><br><br>
+
+                <input type="submit" value="Register">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

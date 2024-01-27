@@ -1,0 +1,13 @@
+Tablica ogłoszeń - w stylu forum, przy dodawaniu ogłoszenia można wybrać jakie działy będą widziały ogłoszenie + #tagi, które pokazują do jakich działów zostało wysłane
+
+Komunikacja - podstawowo po ID, ale z możliwością dodania opisu do kogoś (jak na steamie), użytkownik też może dodać sobie opis.
+Po ID wysyła się wiadomość do użytkownika odbiorcy. Wybór działu i tam wszystkie ID pracowników z działu, dodanie do kogoś gwiazdki, co skutkuje zapisaniem go na liście po prawej stronie.
+Tylko wiadomości tekstowe.
+
+Dokumentacja - Wybór z listy lub wpisanie id detalu, po naciśnięciu wyświetla się dokumentacja w nowej karcie jako pdf
+
+Stanowisko - wybór z listy, po wyborze w oknie (tak jak harmonogram) wyświetla się opis stanowiska, gdzie użytkownik może zaznaczyć, jakie prace konserwacyjne wykonał.
+
+Alerty - wysyłane są do stanowiska, otrzymują je osoby, które mają pracować na danym stanowisku w przeciągu 48h + kierownik + mechanicy
+
+Ustawienia - możliwość zmiany hasła, 

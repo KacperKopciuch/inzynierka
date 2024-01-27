@@ -1,0 +1,5 @@
+Zarządzanie produkcją - Z działu logistycznego przychodzi wiadomość o ilości zamówienia na dany detal i czas na realizację zamówienia. Po prawej stronie widnieje ilość zamówionych produktów,
+a po lewej wykonanych produktów. Dział management może dodać wykonane produkty. Gdy ilość potrzebnego produktu i wykonanego produktu = 1 (1=1) po prawej stronie pojawia się zielona fajka,
+jeśli zamówienie nie jest kompletne jest czerwony krzyzyk. Przez czas wykonywania zamówienia znajduje się procentowy przelicznik.
+
+

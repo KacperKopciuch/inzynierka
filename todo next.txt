@@ -1,0 +1,2 @@
+automatyczne dodanie ID do pracownka podczas tworzenia konta i zmiana "USERNAME" na ID.
+w panelu zarządzania w zakładce 'harmonogram' dodać ID do tabeli
