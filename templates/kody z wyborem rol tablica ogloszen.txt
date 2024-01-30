@@ -1,0 +1,571 @@
+from flask import Flask, render_template, redirect, url_for, flash, request, session
+# from flask_security import SQLAlchemyUserDatastore, Security, ConfirmRegisterForm
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask import jsonify
+from flask_cors import CORS
+from flask_login import LoginManager, current_user
+from flask_login import UserMixin
+from flask_login import login_user
+from flask_login import login_required
+from flask_login import logout_user
+from urllib.parse import urlparse
+from datetime import datetime
+import bcrypt
+import json
+# import logging
+# from wtforms import StringField
+
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.config['SECRET_KEY'] = 'tajny_klucz'
+"""
+app.config['SESSION_COOKIE_SECURE'] = True # Tylko przez HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True # Nie dostępne przez JavaScript
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax' # Ogranicza wysyłanie cookie do innych witryn
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
+"""
+folder_name = 'C:/Users/Kacper/Desktop/Praca INZ/bazadb'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{folder_name}/users.db'
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+"""
+# Inicjalizacja Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
+# Modyfikacja formularza logowania i rejestracji z użyciem Flask-WTF
+class ExtendedRegisterForm(ConfirmRegisterForm):
+    username = StringField('Username', [Required()])
+
+security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+
+# Logowanie prób logowania
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+"""
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    print(f"Loading user with ID: {user_id}")
+    return User.query.get(int(user_id))
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(256), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, username, email, password, role):
+        self.username = username
+        self.email = email
+        self.password = password
+        self.role = role
+
+
+class Schedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_name = db.Column(db.String(100), nullable=False)
+    position = db.Column(db.String(100), nullable=False)
+    shift_data = db.Column(db.Text, nullable=False)  # JSON z danymi o zmianach
+
+
+# Utwórz tabelę w bazie danych, jeśli jeszcze nie istnieje
+with app.app_context():
+    db.create_all()
+
+
+class Announcement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.relationship('User', backref='announcements')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expiration_date = db.Column(db.DateTime, nullable=True)
+    departments = db.Column(db.String, nullable=True)
+
+    # Możesz dodać więcej pól według potrzeb
+
+
+# class ExtendedRegisterForm(ConfirmRegisterForm):
+#   password = PasswordField('Password', [Required(), Length(min=6), Regexp('...')])  # Dodaj wymagania dotyczące hasła
+
+# Register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        user_exists = User.query.filter_by(username=username).first()
+        email_exists = User.query.filter_by(email=email).first()
+
+        if password != confirm_password:
+            flash('Passwords are incorrect', 'error')
+            return redirect(url_for('register'))
+
+        if user_exists or email_exists:
+            flash('Username or Email already exists. Please choose a different one.', 'error')
+            return redirect(url_for('register'))
+
+        role = request.form['role']
+
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        new_user = User(username=username, email=email, password=hashed_password.decode('utf-8'), role=role)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Your account has been created! You are now able to log in', 'success')
+        return redirect(url_for('register'))
+
+    return render_template('register.html')
+
+
+# LOGIN
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['login-username']
+        password = request.form['login-password']
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            login_user(user)
+            next_page = request.args.get('next')
+
+            if not next_page or urlparse(next_page).netloc != '':
+                return redirect(url_for(user.role))
+
+            return redirect(next_page)
+        else:
+            flash('Invalid username or password', 'error')
+
+    return render_template('login.html')
+
+
+@app.route('/home')
+@login_required
+def home():
+    if current_user.role == 'home':
+        schedules = Schedule.query.all()
+        return render_template('home.html', schedules=schedules)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/management')
+@login_required
+def management():
+    if current_user.role == 'management':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('management.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/production')
+@login_required
+def production():
+    if current_user.role == 'production':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('production.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/quality_control')
+@login_required
+def quality_control():
+    if current_user.role == 'quality_control':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('quality_control.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/hr')
+@login_required
+def hr():
+    if current_user.role == 'hr':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('hr.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/logistic')
+@login_required
+def logistic():
+    if current_user.role == 'logistic':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('logistic.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/financial')
+@login_required
+def financial():
+    if current_user.role == 'financial':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('financial.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/programmer')
+@login_required
+def programmer():
+    if current_user.role == 'programmer':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('programmer.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+@app.route('/it')
+@login_required
+def it():
+    if current_user.role == 'it':
+        schedules = Schedule.query.all()
+        user_id = current_user.get_id()
+        return render_template('it.html', schedules=schedules, user_id=user_id)
+    else:
+        flash('Access error', 'error')
+        return redirect(url_for('home'))
+
+
+# LogOut
+@app.route('/logout')
+def logout():
+    logout_user()
+    flash('You have been logged out', 'success')
+    return redirect(url_for('login'))
+
+
+@app.route('/get_table_data')
+def get_table_data():
+    schedules = Schedule.query.all()
+    data = [{
+        'employee_name': schedule.employee_name,
+        'position': schedule.position,
+        'shift_data': json.loads(schedule.shift_data)
+    } for schedule in schedules]
+    return jsonify(data)
+
+
+@app.route('/save_table', methods=['POST'])
+def save_table():
+    try:
+        data = request.json
+
+        # Usuń istniejące wpisy (opcjonalnie, w zależności od logiki aplikacji)
+        Schedule.query.delete()
+
+        # Zapisz nowe dane w bazie danych
+        for row in data:
+            new_schedule = Schedule(
+                employee_name=row['employee_name'],
+                position=row['position'],
+                shift_data=json.dumps(row['shift_data'])
+            )
+            db.session.add(new_schedule)
+        db.session.commit()
+
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        # Logowanie błędu
+        print(f"Wystąpił błąd: {e}")
+        return jsonify({'error': 'Wystąpił błąd podczas zapisywania danych'}), 500
+
+
+@app.route('/delete_rows', methods=['POST'])
+def delete_rows():
+    try:
+        data = request.json
+        ids_to_delete = data['ids']
+        Schedule.query.filter(Schedule.id.in_(ids_to_delete)).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print(e)
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/get_announcements')
+def get_announcements():
+    if current_user.is_authenticated:
+        user_role = current_user.role
+        announcements = Announcement.query.filter(
+            Announcement.departments.contains(user_role) |
+            Announcement.departments.contains('all')
+        ).order_by(Announcement.created_at.desc()).all()
+
+        return jsonify([{
+            'title': ann.title,
+            'content': ann.content,
+            'author': ann.author.username,
+            'date': ann.created_at.strftime('%Y-%m-%d %H:%M')
+        } for ann in announcements])
+
+    else:
+        return jsonify([])
+
+
+@app.route('/add_announcement', methods=['POST'])
+@login_required
+def add_announcement():
+    data = request.get_json()
+    print(data)
+    expiration_date = datetime.strptime(data['expirationDate'], '%Y-%m-%d') if 'expirationDate' in data else None
+    departments = ','.join(data.get('departments', []))  # Upewnij się, że 'departments' jest listą
+
+    new_announcement = Announcement(
+        title=data['title'],
+        content=data['content'],
+        author_id=current_user.id,
+        expiration_date=expiration_date,
+        departments=departments  # Powinno być ciągiem znaków oddzielonym przecinkami
+    )
+    print(data)
+    db.session.add(new_announcement)
+    db.session.commit()
+    print(data)
+    return jsonify({'status': 'success', 'message': 'Ogłoszenie dodane'})
+
+
+@app.route('/delete_announcement/<int:announcement_id>', methods=['DELETE'])
+def delete_announcement(announcement_id):
+    announcement = Announcement.query.get_or_404(announcement_id)
+    if announcement.author_id != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Brak uprawnień'}), 403
+    db.session.delete(announcement)
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Ogłoszenie usunięte'})
+
+
+@app.route('/delete_expired_announcements')
+def delete_expired_announcements():
+    Announcement.query.filter(Announcement.expiration_date < datetime.utcnow()).delete()
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Przestarzałe ogłoszenia usunięte'})
+
+
+@app.route('/secret_area')
+@login_required
+def secret_area():
+    return 'Tylko dla zalogowanych użytkowników!'
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+function loadAnnouncements() {
+    fetch('/get_announcements')
+        .then(response => response.json())
+        .then(announcements => {
+            const list = document.getElementById('announcement-list');
+            list.innerHTML = ''; // Czyszczenie listy przed dodaniem nowych ogłoszeń
+            announcements.forEach(announcement => {
+                const item = document.createElement('div');
+                item.classList.add('announcement-item');
+                item.innerHTML = `
+                    <h3 class="announcement-title">${announcement.title}</h3>
+                    <p>${announcement.content}</p>
+                    <small>Dodane przez: ${announcement.author}, ${announcement.date}</small>
+                `;
+                list.appendChild(item);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('announcement-board-button').addEventListener('click', function() {
+        var container = document.getElementById('dynamic-content');
+        container.innerHTML = `
+            <style>
+                #announcement-board {
+                    width: 100%;
+                    background-color: #f2f2f2;
+                    padding: 10px;
+                    box-sizing: border-box;
+                }
+
+                .top-bar {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+
+                #add-announcement-button, #search-button {
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                }
+
+                .search-announcement input {
+                    padding: 5px;
+                    margin-right: 5px;
+                }
+
+                #announcement-list {
+                    /* Dodatkowe style dla listy ogłoszeń */
+                }
+            </style>
+        <div id="announcement-board">
+        <div class="top-bar">
+            <button id="add-announcement-button">Dodaj ogłoszenie</button>
+            <div class="search-announcement">
+                <input type="text" id="search-input" placeholder="Szukaj ogłoszenia">
+                <button id="search-button">Szukaj</button>
+            </div>
+        </div>
+
+        <div id="add-announcement-modal" style="display: none;">
+            <input type="text" id="announcement-title" placeholder="Tytuł ogłoszenia"><br><br>
+            <textarea id="announcement-content" placeholder="Treść ogłoszenia"></textarea><br><br>
+            <input type="date" id="announcement-expiration-date" placeholder="Data ważności"><br><br>
+
+            <input type="checkbox" id="logistic" name="department" value="logistic">
+            <label for="logistic">Logistyka</label><br>
+            <input type="checkbox" id="production" name="department" value="production">
+            <label for="production">Produkcja</label><br>
+            <input type="checkbox" id="management" name="department" value="management">
+            <label for="management">Zarządzanie</label><br>
+            <input type="checkbox" id="quality_control" name="department" value="quality_control">
+            <label for="quality_control">Kontrola jakości</label><br>
+            <input type="checkbox" id="hr" name="department" value="hr">
+            <label for="hr">HR</label><br>
+            <input type="checkbox" id="financial" name="department" value="financial">
+            <label for="financial">Finanse</label><br>
+            <input type="checkbox" id="programmer" name="department" value="programmer">
+            <label for="programmer">Programiści</label><br>
+            <input type="checkbox" id="it" name="department" value="it">
+            <label for="it">IT</label><br><br>
+
+            <button id="submit-announcement">Dodaj ogłoszenie</button>
+        </div>
+
+        <div id="announcement-list">
+            <div class="announcement-item">
+                <h3 class="announcement-title">Tytuł ogłoszenia</h3>
+                <p>Treść ogłoszenia</p>
+                <small>Dodane przez: Autor, Data</small>
+            </div>
+        </div>
+    </div>
+        `;
+
+        // Dodajemy nasłuchiwacze zdarzeń
+        document.getElementById('add-announcement-button').addEventListener('click', function() {
+            document.getElementById('add-announcement-modal').style.display = 'block';
+        });
+
+        document.getElementById('submit-announcement').addEventListener('click', function() {
+            const title = document.getElementById('announcement-title').value;
+            const content = document.getElementById('announcement-content').value;
+            const selectedDepartments = [];
+            document.querySelectorAll('input[name="department"]:checked').forEach((checkbox) => {
+                selectedDepartments.push(checkbox.value);
+            });
+
+            // Wysyłanie danych do serwera
+            fetch('/add_announcement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title,
+                    content,
+                    departments: selectedDepartments.join(',')
+                }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log('Ogłoszenie dodane:', data);
+                console.log(JSON.stringify({ title, content, departments: selectedDepartments.join(',') }));
+                // Opcjonalnie: odśwież listę ogłoszeń
+                loadAnnouncements();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // Ładowanie ogłoszeń po kliknięciu na przycisk tablicy ogłoszeń
+        loadAnnouncements();
+
+        document.getElementById('search-button').addEventListener('click', function() {
+            var searchText = document.getElementById('search-input').value.toLowerCase();
+            var announcements = document.querySelectorAll('.announcement-item');
+
+            announcements.forEach(function(announcement) {
+                var title = announcement.querySelector('.announcement-title').textContent.toLowerCase();
+                if (title.includes(searchText)) {
+                    announcement.style.display = '';
+                } else {
+                    announcement.style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('search-input').addEventListener('input', function() {
+            if (this.value.length === 0) {
+                var announcements = document.querySelectorAll('.announcement-item');
+                announcements.forEach(function(announcement) {
+                    announcement.style.display = '';
+                });
+            }
+        });
+
+    });
+});
