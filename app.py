@@ -4,6 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask import jsonify
 from flask_cors import CORS
+from flask_login import LoginManager, current_user
+from flask_login import UserMixin
+from flask_login import login_user
+from flask_login import login_required
+from flask_login import logout_user
+from urllib.parse import urlparse
+from datetime import datetime
 import bcrypt
 import json
 # import logging
@@ -23,6 +30,8 @@ folder_name = 'C:/Users/Kacper/Desktop/Praca INZ/bazadb'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{folder_name}/users.db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 """
 # Inicjalizacja Flask-Security
@@ -42,12 +51,24 @@ logger = logging.getLogger(__name__)
 """
 
 
-class User(db.Model):
+@login_manager.user_loader
+def load_user(user_id):
+    print(f"Loading user with ID: {user_id}")
+    return User.query.get(int(user_id))
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(50), nullable=False, default='production')
+    role = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, username, email, password, role):
+        self.username = username
+        self.email = email
+        self.password = password
+        self.role = role
 
 
 class Schedule(db.Model):
@@ -60,6 +81,18 @@ class Schedule(db.Model):
 # Utwórz tabelę w bazie danych, jeśli jeszcze nie istnieje
 with app.app_context():
     db.create_all()
+
+
+class Announcement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.relationship('User', backref='announcements')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expiration_date = db.Column(db.DateTime, nullable=True)
+
+    # Możesz dodać więcej pól według potrzeb
 
 
 # class ExtendedRegisterForm(ConfirmRegisterForm):
@@ -102,50 +135,27 @@ def register():
 # LOGIN
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # logger.info('Próba logowania')
     if request.method == 'POST':
         username = request.form['login-username']
         password = request.form['login-password']
 
         user = User.query.filter_by(username=username).first()
 
-# Passwd checking
-        if user:
-            if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-                session['username'] = user.username
-                session['role'] = user.role
+        if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            login_user(user)
+            next_page = request.args.get('next')
 
-                # Przekierowanie w zależności od roli
-                if user.role == 'management':
-                    return redirect(url_for('management'))
-                elif user.role == 'production':
-                    return redirect(url_for('production'))
-                elif user.role == 'quality_control':
-                    return redirect(url_for('quality_control'))
-                elif user.role == 'hr':
-                    return redirect(url_for('hr'))
-                elif user.role == 'logistic':
-                    return redirect(url_for('logistic'))
-                elif user.role == 'financial':
-                    return redirect(url_for('financial'))
-                elif user.role == 'programmer':
-                    return redirect(url_for('programmer'))
-                elif user.role == 'it':
-                    return redirect(url_for('it'))
+            if not next_page or urlparse(next_page).netloc != '':
+                # Użyj roli użytkownika do określenia przekierowania
+                return redirect(url_for(user.role))
 
-                else:
-                    # Domyślne przekierowanie, jeśli rola nie jest rozpoznana
-                    return redirect(url_for('home'))
-
-            else:
-                flash('Invalid password', 'error')
+            return redirect(next_page)
         else:
-            flash('Username does not exist', 'error')
+            flash('Invalid username or password', 'error')
 
     return render_template('login.html')
 
 
-# home
 @app.route('/home')
 def home():
     if 'username' in session:
@@ -156,90 +166,105 @@ def home():
 
 
 @app.route('/management')
+@login_required
 def management():
-    if 'role' in session and session['role'] == 'management':
+    user_id = current_user.get_id()
+    if current_user.role == 'management':
         schedules = Schedule.query.all()
-        return render_template('management.html', schedules=schedules)
+        return render_template('management.html', schedules=schedules, user_id=user_id)
     else:
         flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/production')
+@login_required
 def production():
-    if 'role' in session and session['role'] == 'production':
+    user_id = current_user.get_id()
+    if current_user.role == 'production':
         schedules = Schedule.query.all()
-        return render_template('production.html', schedules=schedules)
+        return render_template('production.html', schedules=schedules, user_id=user_id)
     else:
         flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/quality_control')
+@login_required
 def quality_control():
-    if 'role' in session and session['role'] == 'quality_control':
-        # logika strony dla kierownictwa
-        return render_template('quality_control.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'quality_control':
+        schedules = Schedule.query.all()
+        return render_template('quality_control.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/hr')
+@login_required
 def hr():
-    if 'role' in session and session['role'] == 'hr':
-        # logika strony dla kierownictwa
-        return render_template('hr.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'hr':
+        schedules = Schedule.query.all()
+        return render_template('hr.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/logistic')
+@login_required
 def logistic():
-    if 'role' in session and session['role'] == 'logistic':
-        # logika strony dla kierownictwa
-        return render_template('logistic.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'logistic':
+        schedules = Schedule.query.all()
+        return render_template('logistic.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/financial')
+@login_required
 def financial():
-    if 'role' in session and session['role'] == 'financial':
-        # logika strony dla kierownictwa
-        return render_template('financial.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'financial':
+        schedules = Schedule.query.all()
+        return render_template('financial.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/programmer')
+@login_required
 def programmer():
-    if 'role' in session and session['role'] == 'programmer':
-        # logika strony dla kierownictwa
-        return render_template('programmer.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'programmer':
+        schedules = Schedule.query.all()
+        return render_template('programmer.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 @app.route('/it')
+@login_required
 def it():
-    if 'role' in session and session['role'] == 'it':
-        # logika strony dla kierownictwa
-        return render_template('it.html')
+    user_id = current_user.get_id()
+    if current_user.role == 'it':
+        schedules = Schedule.query.all()
+        return render_template('it.html', schedules=schedules, user_id=user_id)
     else:
-        flash('Brak dostępu', 'error')
+        flash('Access error', 'error')
         return redirect(url_for('home'))
 
 
 # LogOut
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
-    session.pop('role', None)
+    logout_user()
     flash('You have been logged out', 'success')
     return redirect(url_for('login'))
 
@@ -259,6 +284,7 @@ def get_table_data():
 def save_table():
     try:
         data = request.json
+        print(data)
 
         # Usuń istniejące wpisy (opcjonalnie, w zależności od logiki aplikacji)
         Schedule.query.delete()
@@ -291,6 +317,60 @@ def delete_rows():
     except Exception as e:
         print(e)
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/get_announcements')
+def get_announcements():
+    announcements = Announcement.query.order_by(Announcement.created_at.desc()).all()
+    return jsonify([{
+        'title': ann.title,
+        'content': ann.content,
+        'author': ann.author.username,
+        'date': ann.created_at.strftime('%Y-%m-%d %H:%M')
+    } for ann in announcements])
+
+
+@app.route('/add_announcement', methods=['POST'])
+@login_required
+def add_announcement():
+    data = request.get_json()
+    # Deklaracja i inicjalizacja expiration_date
+    expiration_date = None
+    if 'expirationDate' in data:
+        expiration_date = datetime.strptime(data['expirationDate'], '%Y-%m-%d')
+
+    new_announcement = Announcement(
+        title=data['title'],
+        content=data['content'],
+        author_id=current_user.id,  # Zakładając, że korzystasz z Flask-Login
+        expiration_date=expiration_date
+    )
+    db.session.add(new_announcement)
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Ogłoszenie dodane'})
+
+
+@app.route('/delete_announcement/<int:announcement_id>', methods=['DELETE'])
+def delete_announcement(announcement_id):
+    announcement = Announcement.query.get_or_404(announcement_id)
+    if announcement.author_id != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Brak uprawnień'}), 403
+    db.session.delete(announcement)
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Ogłoszenie usunięte'})
+
+
+@app.route('/delete_expired_announcements')
+def delete_expired_announcements():
+    Announcement.query.filter(Announcement.expiration_date < datetime.utcnow()).delete()
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'Przestarzałe ogłoszenia usunięte'})
+
+
+@app.route('/secret_area')
+@login_required
+def secret_area():
+    return 'Tylko dla zalogowanych użytkowników!'
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@
         <button>Stanowisko</button>
         <button>Dokumentacja</button>
         <button>Komunikacja</button>
-        <button>Tablica ogłoszeń</button>
+        <button id="announcement-board-button">Tablica ogłoszeń</button>
 
         <div class="bottom-buttons">
             <button>Ustawienia</button>
@@ -23,8 +23,6 @@
     </div>
 
     <div class="content">
-        <!-- Tu umieść zawartość główną strony -->
-        <h1>Witaj w Panelu Produkcji</h1>
         <div id="dynamic-content"></div>
     </div>
 
@@ -37,5 +35,6 @@
     // Podobne event listenery dla innych przycisków
 </script>
 
+<script type="module" src="{{ url_for('static', filename='js_noticeboard.js') }}"></script>
 </body>
 </html>

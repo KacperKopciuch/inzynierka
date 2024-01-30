@@ -107,9 +107,6 @@ export function saveTableData() {
     });
 }
 
-
-
-
 export function generateTableHeader() {
     let headerRow1 = '<tr><th>Pracownik</th><th>Stanowisko</th>';
     let headerRow2 = '<tr><th></th><th></th>';
