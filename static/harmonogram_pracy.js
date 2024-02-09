@@ -67,13 +67,25 @@ function fetchAndDisplayUserSchedule() {
 
                 console.log(shifts[0]); // Log pierwszego elementu przed trim()
                 // Iteracja po zmianach i dodanie odpowiednich klas
-                shifts.forEach(shift => {
-                    // Usunięcie zbędnych cudzysłowów i białych znaków przed i po wartości
-                    let trimmedShift = shift.trim().replace(/^"|"$/g, '');
+                shifts.forEach((shift, index) => {
+                    console.log("Wartość shift:", shift);
+                    let trimmedShift;
+                    if (index === 0) {
+                        // Usunięcie zbędnych nawiasów kwadratowych i cudzysłowów oraz białych znaków przed i po wartości
+                        trimmedShift = shift.trim().replace(/^\["|"$/g, '');
+                    } else if (index === shifts.length - 1) {
+                        // Usunięcie zbędnych cudzysłowów i białych znaków przed i po wartości
+                        trimmedShift = shift.trim().replace(/^"|"|\]$/g, '');
+                    } else {
+                        // Usunięcie zbędnych cudzysłowów i białych znaków przed i po wartości
+                        trimmedShift = shift.trim().replace(/^"|"$/g, '');
+                    }
                     // Porównanie po usunięciu zbędnych znaków
                     let className = trimmedShift === 'selected' ? 'selected' : '';
                     contentHtml += `<td class="${className}">${className ? '✓' : ''}</td>`;
                 });
+
+
 
                 console.log(shifts[0].trim()); // Log pierwszego elementu po trim()
 
