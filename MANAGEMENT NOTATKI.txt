@@ -2,4 +2,14 @@ Zarządzanie produkcją - Z działu logistycznego przychodzi wiadomość o iloś
 a po lewej wykonanych produktów. Dział management może dodać wykonane produkty. Gdy ilość potrzebnego produktu i wykonanego produktu = 1 (1=1) po prawej stronie pojawia się zielona fajka,
 jeśli zamówienie nie jest kompletne jest czerwony krzyzyk. Przez czas wykonywania zamówienia znajduje się procentowy przelicznik.
 
+PLANOWANIE PRODUKCJI:
 
+Dział obsługi klienta przyjmuje zamówienie i wklepuje w system ->
+Wklepane zamówienie zawiera dane zamowienia takie jak ID detalu, ilosc potrzebnych sztuk i czas ->
+Zamówienie pojawia się w dziale zarządzania w zakładce 'Planowanie produkjci'. (zamówienie.jpg)
+
+ALTERNATYWNIE
+
+Tworzysz zamówienie w 'planowanie produkcji'. Podajesz ręcznie ID detalu, ilość zamówionych produktów i czas do końca realizacji. ^^
+
+Po wyborze ID detalu wyskakuje informacja jaka jest przybliżona możliwa ilość produkcyjna na 1 stanowisku

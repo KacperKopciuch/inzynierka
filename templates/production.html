@@ -8,7 +8,7 @@
 <body>
     <div class="sidebar">
         <h2>USERNAME</h2>
-        <button>Harmonogram pracy</button>
+        <button id="show-schedule">Harmonogram pracy</button> <!-- Dodane id -->
         <button>Alerty</button>
         <button>Wymiary</button>
         <button>Stanowisko</button>
@@ -26,15 +26,7 @@
         <div id="dynamic-content"></div>
     </div>
 
-<script>
-    document.getElementById('show-schedule').addEventListener('click', function() {
-        document.getElementById('dynamic-content').innerHTML = '<h2>Harmonogram zadań</h2><p>Tutaj załaduj tabelę harmonogramu...</p>';
-        // Tutaj możesz dodać więcej logiki do ładowania rzeczywistej zawartości
-    });
-
-    // Podobne event listenery dla innych przycisków
-</script>
-
 <script type="module" src="{{ url_for('static', filename='js_noticeboard.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='harmonogram_pracy.js') }}"></script>
 </body>
 </html>

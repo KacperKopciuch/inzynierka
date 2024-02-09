@@ -11,6 +11,7 @@ from flask_login import login_required
 from flask_login import logout_user
 from urllib.parse import urlparse
 from datetime import datetime
+from datetime import datetime, timedelta
 import bcrypt
 import json
 # import logging
@@ -27,7 +28,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 """
 folder_name = 'C:/Users/Kacper/Desktop/Praca INZ/bazadb'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{folder_name}/users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{folder_name}/crm.db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager()
@@ -73,9 +74,12 @@ class User(db.Model, UserMixin):
 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    employee_name = db.Column(db.String(100), nullable=False)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_user_id'), nullable=False)
     position = db.Column(db.String(100), nullable=False)
     shift_data = db.Column(db.Text, nullable=False)  # JSON z danymi o zmianach
+
+    # relacje
+    employee = db.relationship('User', backref='schedule')
 
 
 # Utwórz tabelę w bazie danych, jeśli jeszcze nie istnieje
@@ -271,12 +275,18 @@ def logout():
 
 @app.route('/get_table_data')
 def get_table_data():
-    schedules = Schedule.query.all()
+    schedules = Schedule.query.join(Schedule.employee).all()
+    print(schedules)
     data = [{
-        'employee_name': schedule.employee_name,
+        'employee': {
+            'id': schedule.employee.id,
+            'name': schedule.employee.username
+        },
         'position': schedule.position,
         'shift_data': json.loads(schedule.shift_data)
     } for schedule in schedules]
+    print(schedules)
+    print(data)
     return jsonify(data)
 
 
@@ -292,7 +302,7 @@ def save_table():
         # Zapisz nowe dane w bazie danych
         for row in data:
             new_schedule = Schedule(
-                employee_name=row['employee_name'],
+                employee_id=row['employee_id'],
                 position=row['position'],
                 shift_data=json.dumps(row['shift_data'])
             )
@@ -350,6 +360,16 @@ def add_announcement():
     return jsonify({'status': 'success', 'message': 'Ogłoszenie dodane'})
 
 
+@app.route('/get_users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users_list = [
+        {'id': user.id, 'username': user.username, 'email': user.email, 'role': user.role}
+        for user in users
+    ]
+    return jsonify(users_list)
+
+
 @app.route('/delete_announcement/<int:announcement_id>', methods=['DELETE'])
 def delete_announcement(announcement_id):
     announcement = Announcement.query.get_or_404(announcement_id)
@@ -371,6 +391,38 @@ def delete_expired_announcements():
 @login_required
 def secret_area():
     return 'Tylko dla zalogowanych użytkowników!'
+
+
+@app.route('/fetch_employees', methods=['GET'])
+def fetch_employees():
+    employees = User.query.all()
+
+    # Przetwarzamy dane o pracownikach na format JSON
+    employee_data = [{"id": employee.id, "username": employee.username} for employee in employees]
+
+    print(employees)
+    print(employee_data)
+    return jsonify(employee_data)
+
+
+@app.route('/api/schedule', methods=['GET'])
+@login_required
+def get_user_schedule():
+    employee_id = current_user.id  # Pobieranie ID zalogowanego użytkownika
+    start_date = datetime.today()  # Przykładowa data początkowa, tutaj: dzisiejsza data
+    dates = [(start_date + timedelta(days=i)).strftime('%d.%m.%Y') for i in range(7)]  # Lista dat dla 7 dni
+
+    schedules = Schedule.query.filter_by(employee_id=employee_id).all()
+
+    schedule_data = [
+        {
+            "position": schedule.position,
+            "shift_data": schedule.shift_data.split(','),  # Zakładam, że shift_data jest stringiem rozdzielonym przecinkami
+            "dates": dates  # Dodajemy listę dat
+        } for schedule in schedules
+    ]
+
+    return jsonify(schedule_data)
 
 
 if __name__ == '__main__':

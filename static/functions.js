@@ -5,10 +5,24 @@ export function createTableRows(data) {
     data.forEach(rowData => {
         let row = document.createElement('tr');
         row.onclick = () => toggleRowSelection(row);
+
+        let select = "";
+        employees.forEach((element)=>{
+            select += `<option value="${element.id}" ${element.id == rowData.employee.id ? "selected": ""}>id.${element.id} ${element.username}</option>`;
+        });
         row.innerHTML = `
-            <td contenteditable="true">${rowData.employee_name}</td>
+            <td contenteditable="true">
+                <form>
+                    <select name="employees" id="employees">
+                        <option value="">--Please choose an option--</option>
+                        ${select}
+                    </select>
+                    ${rowData.employee.id} ${rowData.employee.name}
+                </form>
+            </td>
             <td contenteditable="true">${rowData.position}</td>
         `;
+
 
         rowData.shift_data.forEach(shift => {
             // Tworzenie komórki
@@ -56,8 +70,21 @@ export function toggleCell(cell) {
 export function addRow() {
     const tableBody = document.querySelector("#schedule-table tbody");
     let row = document.createElement('tr');
+
+    let select
+    employees.forEach((element)=>{
+        select += `<option value="${element.id}">id.${element.id} ${element.username}</option>`;
+    })
+
     row.innerHTML = `
-        <td contenteditable="true">Nowy Pracownik</td>
+        <td contenteditable="true">
+        <form>
+            <select name="employees" id="employees">
+                <option value="">--Please choose an option--</option>
+                ${select}
+            </select>
+        </form></td>
+
         <td contenteditable="true">Nowe Stanowisko</td>
     `;
     for (let j = 0; j < 7; j++) { // Dla każdego dnia tygodnia
@@ -77,16 +104,23 @@ export function saveTableData() {
     // Iterowanie po wierszach tabeli i zbieranie danych (zaczynając od pierwszego wiersza danych, a nie nagłówka)
     for (let i = 1; i < table.rows.length; i++) {
         let row = table.rows[i];
+        console.log(row)
         // Pomiń wiersze, które są puste (na przykład wiersze z pustymi komórkami pracownika i stanowiska)
         if (row.cells[0].innerText.trim() === '' && row.cells[1].innerText.trim() === '') {
             continue;
         }
+        console.log(row)
+
+        let selectElement = row.cells[0].querySelector("select");
+        let selectedValue = selectElement ? selectElement.value : null;
 
         let rowData = {
-            employee_name: row.cells[0].innerText,
-            position: row.cells[1].innerText,
-            shift_data: Array.from(row.cells).slice(2).map(cell => cell.classList.contains('selected') ? 'selected' : '')
-        };
+        employee_id: selectedValue,
+        position: row.cells[1].innerText,
+        shift_data: Array.from(row.cells).slice(2).map(cell => cell.classList.contains('selected') ? 'selected' : '')
+    };
+
+        console.log(rowData)
         data.push(rowData);
     }
 
@@ -138,6 +172,7 @@ export function fetchAndFillTable() {
     fetch('/get_table_data')
         .then(response => response.json())
         .then(data => {
+        console.log(data)
             createTableRows(data);
             updateTableHeaders();
         })
@@ -179,4 +214,16 @@ export function toggleRowSelection(row) {
 export function enableSelecting() {
     isSelectingEnabled = !isSelectingEnabled;
     document.getElementById('select-row-button').innerText = isSelectingEnabled ? 'Zakończ wybieranie' : 'Wybierz wiersz';
+}
+
+let employees
+
+export function fetchEmployees() {
+    fetch('/fetch_employees')
+        .then(response => response.json())
+        .then(data => {
+        employees = data
+        console.log(employees)
+        })
+        .catch(error => console.error('Error:', error));
 }

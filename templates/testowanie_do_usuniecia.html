@@ -203,3 +203,24 @@ def login():
     # logika logowania
 
 
+
+
+
+
+
+export function addRow() {
+    const tableBody = document.querySelector("#schedule-table tbody");
+    let row = document.createElement('tr');
+    row.innerHTML = `
+        <td contenteditable="true">Nowy Pracownik</td>
+        <td contenteditable="true">Nowe Stanowisko</td>
+    `;
+    for (let j = 0; j < 7; j++) { // Dla każdego dnia tygodnia
+        row.innerHTML += `
+            <td contenteditable="true" onclick="toggleCell(this)"></td>
+            <td contenteditable="true" onclick="toggleCell(this)"></td>
+            <td contenteditable="true" onclick="toggleCell(this)"></td>
+        `;
+    }
+    tableBody.appendChild(row);
+}

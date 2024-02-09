@@ -39,3 +39,52 @@
             flex-grow: 1;
             padding: 20px;
         }
+
+        #dynamic-content div {
+            background: #f0f0f0; /* jasnoszary tło dla każdego zadania */
+            margin: 10px 0; /* marginesy dookoła */
+            padding: 10px; /* padding wewnątrz */
+            border-radius: 5px; /* zaokrąglone rogi */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* subtelny cień */
+        }
+
+        #dynamic-content h2 {
+            color: #333; /* ciemnoszary kolor tekstu dla nagłówka */
+            margin-bottom: 20px; /* margines poniżej nagłówka */
+        }
+
+        /* Stylizacja tabeli */
+        table {
+            width: 100%; /* Pełna szerokość dostępnego miejsca */
+            border-collapse: collapse; /* Usuwa podwójne ramki */
+            text-align: center; /* Wyrównanie tekstu do środka komórki */
+        }
+
+        th, td {
+            border: 1px solid #ddd; /* Cienka, solidna ramka dla nagłówków i komórek */
+            padding: 8px; /* Dodatkowa przestrzeń wokół tekstu w komórce */
+        }
+
+        th {
+            background-color: #f4f4f4; /* Jasnoszary tło dla nagłówków */
+            color: #333; /* Ciemnoszary tekst */
+        }
+
+        /* Stylizacja wierszy tabeli */
+        tr:nth-child(even) {
+            background-color: #f2f2f2; /* Alternatywne tło dla parzystych wierszy */
+        }
+
+        tr:hover {
+            background-color: #ddd; /* Tło wiersza przy najechaniu myszką */
+        }
+
+        /* Stylizacja komórek zaznaczonych */
+        .selected {
+            background-color: #007bff !important; /* Niebieskie tło dla zaznaczonych komórek */
+            color: white !important; /* Biały tekst dla zaznaczonych komórek */
+        }
+        table tr td.selected {
+            background-color: #007bff !important;
+            color: white !important;
+        }

@@ -1,4 +1,4 @@
-import { createTableRows, getWeekDates, updateTableHeaders, toggleCell, addRow, saveTableData, generateTableHeader, addEventListeners, fetchAndFillTable, deleteSelectedRows, toggleRowSelection, enableSelecting } from './functions.js';
+import { createTableRows, getWeekDates, updateTableHeaders, toggleCell, fetchEmployees, addRow, saveTableData, generateTableHeader, addEventListeners, fetchAndFillTable, deleteSelectedRows, toggleRowSelection, enableSelecting } from './functions.js';
 
 window.toggleCell = toggleCell;
 
@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log(data);
             createTableRows(data);
+            fetchEmployees();
         })
         .catch(error => console.error('Error:', error));
 
