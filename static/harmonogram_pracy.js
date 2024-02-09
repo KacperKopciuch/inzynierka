@@ -2,7 +2,7 @@ document.getElementById('show-schedule').addEventListener('click', function() {
     fetchAndDisplayUserSchedule(); // Wywołanie nowej funkcji do ładowania harmonogramu
 });
 
-document.addEventListener('DOMContentLoaded', fetchAndDisplayUserSchedule);
+
 
 //function fetchAndDisplayUserSchedule() {
 //    fetch('/api/schedule') // Adres endpointu do zmiany na właściwy
