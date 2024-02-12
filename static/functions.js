@@ -245,6 +245,7 @@ export function fetchAndDisplayOrders() {
                     <p>Termin: <span class="order-detail">${order.deadline}</span></p>
                     <p>Ilość wykonana: <span class="order-detail" id="completed-quantity-${order.id}">${order.completed_quantity}</span></p>
                     <button onclick="editQuantity(${order.id})">Edytuj ilość</button>
+                    <button onclick="deleteOrder(${order.id})">Usuń zamówienie</button>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" style="width: ${percentage}%;"></div>
@@ -275,3 +276,15 @@ export function editQuantity(orderId) {
     }
 }
 
+export function deleteOrder(orderId) {
+    fetch(`/api/delete-order/${orderId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        // Opcjonalnie: odśwież listę zamówień po usunięciu
+        fetchAndDisplayOrders();
+    })
+    .catch(error => console.error('Error:', error));
+}

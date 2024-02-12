@@ -485,6 +485,17 @@ def edit_order(order_id):
         return jsonify({'error': 'Zamówienie nie znalezione'}), 404
 
 
+@app.route('/api/delete-order/<int:order_id>', methods=['DELETE'])
+def delete_order(order_id):
+    order = ProductionPlan.query.get(order_id)
+    if order:
+        db.session.delete(order)
+        db.session.commit()
+        return jsonify({'message': 'Zamówienie usunięte pomyślnie'}), 200
+    else:
+        return jsonify({'error': 'Zamówienie nie znalezione'}), 404
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

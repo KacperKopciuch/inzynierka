@@ -14,13 +14,14 @@ import {
     toggleRowSelection,
     enableSelecting,
     fetchAndDisplayOrders,
-    editQuantity
+    editQuantity,
+    deleteOrder
 } from './functions.js';
 
 // Przypisanie globalne funkcji do obiektu window
 window.toggleCell = toggleCell;
-
 window.editQuantity = editQuantity;
+window.deleteOrder = deleteOrder;
 
 // Główny blok kodu uruchamiany po załadowaniu DOM
 document.addEventListener('DOMContentLoaded', function() {
