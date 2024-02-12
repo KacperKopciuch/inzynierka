@@ -40,11 +40,43 @@ document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('planning-button').addEventListener('click', function() {
     fetch('/api/production-planning')
         .then(response => response.text())
-        .then(data => {
-            document.getElementById('dynamic-content').innerHTML = data;
+        .then(html => {
+            document.getElementById('dynamic-content').innerHTML = html;
+            // Teraz, kiedy nowy formularz został wstrzyknięty, musimy zainicjować obsługę formularza
+            initializeFormHandler();
         })
         .catch(error => console.error('Error:', error));
 });
+
+function initializeFormHandler() {
+    const form = document.querySelector('#production-planning-form form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+
+            fetch('/api/submit-production-plan', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                alert(data.message); // or update the DOM with the response
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    } else {
+        console.error("Form not found after fetching production planning");
+    }
+}
 
 // Dodanie zdarzenia do przycisku wylogowania
 document.getElementById('logout-button').addEventListener('click', function() {

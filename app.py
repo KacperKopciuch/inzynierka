@@ -96,7 +96,20 @@ class Announcement(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expiration_date = db.Column(db.DateTime, nullable=True)
 
-    # Możesz dodać więcej pól według potrzeb
+
+class ProductionPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    deadline = db.Column(db.Date, nullable=False)
+    completed_quantity = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return f'<ProductionPlan {self.product_id}>'
+
+
+with app.app_context():
+    db.create_all()
 
 
 # class ExtendedRegisterForm(ConfirmRegisterForm):
@@ -428,6 +441,20 @@ def get_user_schedule():
 @app.route('/api/production-planning')
 def production_planning():
     return render_template('production_planning.html')
+
+
+@app.route('/api/submit-production-plan', methods=['POST'])
+def submit_production_plan():
+    product_id = request.form['product-id']
+    quantity = request.form['quantity']
+    deadline = datetime.strptime(request.form['deadline'], '%Y-%m-%d').date()
+    completed_quantity = request.form['completed-quantity']
+
+    new_plan = ProductionPlan(product_id=product_id, quantity=int(quantity), deadline=deadline, completed_quantity=int(completed_quantity))
+    db.session.add(new_plan)
+    db.session.commit()
+
+    return jsonify({'message': 'Zamówienie dodane pomyślnie'})
 
 
 if __name__ == '__main__':
