@@ -36,3 +36,36 @@
 #production-planning-form button[type="submit"]:hover {
     background-color: #0056b3;
 }
+
+#orders-list {
+    margin-top: 20px;
+}
+
+.order-item {
+    background-color: #f9f9f9; /* jasnoszary tło dla każdego elementu zamówienia */
+    border: 1px solid #ddd; /* cienka, solidna ramka */
+    padding: 10px; /* trochę przestrzeni wewnątrz elementów */
+    margin-bottom: 10px; /* odstęp między elementami zamówienia */
+    border-radius: 5px; /* zaokrąglone rogi */
+}
+
+.order-item p {
+    margin: 0; /* usuwa domyślne marginesy */
+    color: #333; /* ciemnoszary kolor tekstu */
+    font-size: 0.9rem; /* nieco mniejsza czcionka */
+}
+
+.edit-button {
+    background-color: #007bff; /* niebieski kolor tła */
+    color: white; /* biały kolor tekstu */
+    border: none; /* brak obramowania */
+    padding: 5px 10px; /* przestrzeń wokół tekstu */
+    margin-left: 10px; /* odstęp od tekstu po lewej stronie */
+    border-radius: 3px; /* zaokrąglone rogi */
+    cursor: pointer; /* zmienia kursor na wskaźnik, gdy jest nad przyciskiem */
+    text-decoration: none; /* usuwa podkreślenie z linków, jeśli używasz <a> */
+}
+
+.edit-button:hover {
+    background-color: #0056b3; /* ciemniejszy niebieski kolor tła dla efektu hover */
+}

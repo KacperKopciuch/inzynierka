@@ -228,5 +228,43 @@ export function fetchEmployees() {
         .catch(error => console.error('Error:', error));
 }
 
+export function fetchAndDisplayOrders() {
+    fetch('/api/get-orders')
+    .then(response => response.json())
+    .then(orders => {
+        const ordersList = document.getElementById('orders-list');
+        ordersList.innerHTML = '';
+        orders.forEach(order => {
+            const orderElement = document.createElement('div');
+            orderElement.className = 'order-item';
+            orderElement.innerHTML = `
+                <p>Produkt ID: <span class="order-detail">${order.product_id}</span></p>
+                <p>Ilość: <span class="order-detail">${order.quantity}</span></p>
+                <p>Termin: <span class="order-detail">${order.deadline}</span></p>
+                <p>Ilość wykonana: <span class="order-detail" id="completed-quantity-${order.id}">${order.completed_quantity}</span></p>
+                <button onclick="editQuantity(${order.id})">Edytuj ilość</button>
+            `;
+            ordersList.appendChild(orderElement);
+        });
+    });
+}
 
+export function editQuantity(orderId) {
+    const newQuantity = prompt("Podaj nową ilość wykonaną:");
+    if (newQuantity !== null) {
+        fetch(`/api/edit-order/${orderId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({completed_quantity: newQuantity})
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById(`completed-quantity-${orderId}`).textContent = newQuantity;
+            alert(data.message);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
 

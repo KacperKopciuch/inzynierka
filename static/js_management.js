@@ -12,11 +12,15 @@ import {
     fetchAndFillTable,
     deleteSelectedRows,
     toggleRowSelection,
-    enableSelecting
+    enableSelecting,
+    fetchAndDisplayOrders,
+    editQuantity
 } from './functions.js';
 
 // Przypisanie globalne funkcji do obiektu window
 window.toggleCell = toggleCell;
+
+window.editQuantity = editQuantity;
 
 // Główny blok kodu uruchamiany po załadowaniu DOM
 document.addEventListener('DOMContentLoaded', function() {
@@ -44,6 +48,7 @@ document.getElementById('planning-button').addEventListener('click', function() 
             document.getElementById('dynamic-content').innerHTML = html;
             // Teraz, kiedy nowy formularz został wstrzyknięty, musimy zainicjować obsługę formularza
             initializeFormHandler();
+            fetchAndDisplayOrders();
         })
         .catch(error => console.error('Error:', error));
 });

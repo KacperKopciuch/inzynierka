@@ -14,6 +14,9 @@ from datetime import datetime
 from datetime import datetime, timedelta
 import bcrypt
 import json
+
+from sqlalchemy.testing.pickleable import Order
+
 # import logging
 # from wtforms import StringField
 
@@ -455,6 +458,31 @@ def submit_production_plan():
     db.session.commit()
 
     return jsonify({'message': 'Zamówienie dodane pomyślnie'})
+
+
+@app.route('/api/get-orders')
+def get_orders():
+    orders = ProductionPlan.query.all()
+    orders_data = [{
+        'id': order.id,
+        'product_id': order.product_id,
+        'quantity': order.quantity,
+        'deadline': order.deadline.strftime('%Y-%m-%d'),
+        'completed_quantity': order.completed_quantity
+    } for order in orders]
+    return jsonify(orders_data)
+
+
+@app.route('/api/edit-order/<int:order_id>', methods=['PATCH'])
+def edit_order(order_id):
+    data = request.get_json()
+    order = ProductionPlan.query.get(order_id)
+    if order:
+        order.completed_quantity = data['completed_quantity']
+        db.session.commit()
+        return jsonify({'message': 'Ilość wykonana została zaktualizowana.'})
+    else:
+        return jsonify({'error': 'Zamówienie nie znalezione'}), 404
 
 
 if __name__ == '__main__':
