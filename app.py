@@ -425,6 +425,11 @@ def get_user_schedule():
     return jsonify(schedule_data)
 
 
+@app.route('/api/production-planning')
+def production_planning():
+    return render_template('production_planning.html')
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

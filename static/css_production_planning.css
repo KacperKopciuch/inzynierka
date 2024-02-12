@@ -1,0 +1,38 @@
+/* Styling for the production planning form */
+#production-planning-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 400px;
+}
+
+#production-planning-form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+#production-planning-form input[type="text"],
+#production-planning-form input[type="number"],
+#production-planning-form input[type="date"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#production-planning-form button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#production-planning-form button[type="submit"]:hover {
+    background-color: #0056b3;
+}

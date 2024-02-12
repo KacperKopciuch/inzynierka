@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <title>Management Panel</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css_management.css') }}">
+    <script>
+        var productionPlanningUrl = "{{ url_for('static', filename='templates/production_planning.html') }}";
+    </script>
 
 </head>
 <body>
     <div class="sidebar">
         <h2>ID: {{ user_id }}</h2>
-        <button>Planowanie produkcji</button>
+        <button id="planning-button">Planowanie produkcji</button>
         <button>Zarządzanie jakością</button>
         <button id="manage-personnel">Zarządzanie personelem</button>
         <button>Utrzymanie sprzętu</button>

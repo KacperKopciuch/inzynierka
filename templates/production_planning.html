@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Planowanie produkcji</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css_production_planning.css') }}">
+</head>
+<body>
+    <h1>Planowanie Produkcji</h1>
+    <!-- Tutaj możesz dodać formularz planowania produkcji lub inne elementy interfejsu użytkownika -->
+    <div id="production-planning-form">
+        <label for="product-id">ID Produktu:</label>
+        <input type="text" id="product-id" name="product-id"><br><br>
+
+        <label for="quantity">Ilość:</label>
+        <input type="text" id="quantity" name="quantity"><br><br>
+
+        <label for="deadline">Termin realizacji:</label>
+        <input type="date" id="deadline" name="deadline"><br><br>
+
+        <label for="completed-quantity">Ilość wykonana:</label>
+        <input type="text" id="completed-quantity" name="completed-quantity"><br><br>
+
+        <button id="add-order-button">Dodaj zamówienie</button>
+    </div>
+    <script>
+        function addProductionPlanningForm() {
+            fetch('/templates/production_planning.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('dynamic-content').innerHTML = html;
+
+                    // Dodaj obsługę zdarzenia dla formularza
+                    document.getElementById('production-planning-form').addEventListener('submit', function(event) {
+                        event.preventDefault(); // Zapobiegnij domyślnej akcji formularza
+
+                        // Pobierz dane z formularza
+                        const detailId = document.getElementById('detail-id').value;
+                        const quantity = document.getElementById('quantity').value;
+                        const deadline = document.getElementById('deadline').value;
+                        const completedQuantity = document.getElementById('completed-quantity').value;
+
+                        // Tutaj możesz wykonać logikę zapisu danych do bazy danych lub przetwarzania danych
+
+                        // Wyczyść formularz po wysłaniu
+                        document.getElementById('production-planning-form').reset();
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Wywołaj funkcję addProductionPlanningForm() po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', addProductionPlanningForm);
+    </script>
+</body>
+</html>
