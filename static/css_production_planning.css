@@ -69,3 +69,34 @@
 .edit-button:hover {
     background-color: #0056b3; /* ciemniejszy niebieski kolor tła dla efektu hover */
 }
+
+.progress-bar-container {
+    width: 100%;
+    background-color: #ddd; /* Tło dla niezapełnionej części paska postępu */
+    border-radius: 5px; /* Zaokrąglenie rogów paska postępu */
+    margin: 10px 0; /* Odstęp nad i pod paskiem postępu */
+    overflow: hidden; /* Zapewnia, że zaokrąglenia rogów są respektowane przez wewnętrzny pasek */
+    height: 20px; /* Wysokość paska postępu */
+    position: relative; /* Pozycja względna dla umiejscowienia tekstu */
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 5px; /* Zaokrąglenie rogów wypełnienia paska postępu */
+    transition: width 0.4s ease; /* Animacja zmiany szerokości paska */
+    background: linear-gradient(to right, red, green); /* Gradient od czerwonego do zielonego */
+}
+
+.progress-percentage {
+    position: absolute;
+    left: 50%; /* Centrowanie w poziomie */
+    top: 50%; /* Centrowanie w pionie */
+    transform: translate(-50%, -50%); /* Przesunięcie o połowę szerokości i wysokości tekstu, aby wycentrować go w kontenerze */
+    color: black; /* Kolor tekstu */
+    font-weight: bold; /* Pogrubienie tekstu */
+    z-index: 2; /* Upewnij się, że z-index jest wystarczająco wysoki, aby wyświetlać tekst nad paskiem postępu */
+    background: rgba(255, 255, 255, 0.5); /* Półprzezroczyste tło */
+    padding: 2px 5px; /* Nieco miejsca wokół tekstu */
+    border-radius: 3px; /* Delikatne zaokrąglenie rogów tła */
+}
+

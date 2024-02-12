@@ -237,12 +237,19 @@ export function fetchAndDisplayOrders() {
         orders.forEach(order => {
             const orderElement = document.createElement('div');
             orderElement.className = 'order-item';
+            const percentage = (order.completed_quantity / order.quantity) * 100;
             orderElement.innerHTML = `
-                <p>Produkt ID: <span class="order-detail">${order.product_id}</span></p>
-                <p>Ilość: <span class="order-detail">${order.quantity}</span></p>
-                <p>Termin: <span class="order-detail">${order.deadline}</span></p>
-                <p>Ilość wykonana: <span class="order-detail" id="completed-quantity-${order.id}">${order.completed_quantity}</span></p>
-                <button onclick="editQuantity(${order.id})">Edytuj ilość</button>
+                <div class="order-details">
+                    <p>Produkt ID: <span class="order-detail">${order.product_id}</span></p>
+                    <p>Ilość: <span class="order-detail">${order.quantity}</span></p>
+                    <p>Termin: <span class="order-detail">${order.deadline}</span></p>
+                    <p>Ilość wykonana: <span class="order-detail" id="completed-quantity-${order.id}">${order.completed_quantity}</span></p>
+                    <button onclick="editQuantity(${order.id})">Edytuj ilość</button>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${percentage}%;"></div>
+                    <div class="progress-percentage">${percentage.toFixed(2)}%</div>
+                </div>
             `;
             ordersList.appendChild(orderElement);
         });
