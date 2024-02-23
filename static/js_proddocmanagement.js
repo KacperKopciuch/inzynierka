@@ -29,13 +29,6 @@ function fetchAndDisplayDocuments() {
                     <p>${doc.description}</p>
                     <a href="${doc.file_url}" target="_blank">Otwórz dokument</a>
                 `;
-
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Usuń dokument';
-                deleteButton.className = 'delete-button';
-                deleteButton.addEventListener('click', () => deleteDocument(doc.id));
-                docElement.appendChild(deleteButton);
-
                 documentsList.appendChild(docElement);
             });
         });
