@@ -1,226 +1,76 @@
-#Zabezpieczenie
-1. Flask-Login:
-Zainicjowanie LoginManager i konfiguracja callbacku:
-
-python
-Copy code
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-Modyfikacja klasy User:
-Klasa User powinna dziedziczyć po UserMixin, który zapewnia niezbędne implementacje dla zarządzania użytkownikami.
-
-python
-Copy code
-class User(db.Model, UserMixin):
-    # reszta definicji klasy
-Użycie login_user i logout_user:
-W funkcji logowania i wylogowania:
-
-python
-Copy code
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # logika logowania
-    user = User.query.filter_by(username=username).first()
-    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-        login_user(user)
-        # przekieruj do strony głównej
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-2. Flask-Security:
-Konfiguracja z Twoim modelem użytkownika i rolami:
-python
-Copy code
-from flask_security import Security, SQLAlchemyUserDatastore
-
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
-3. Flask-WTF:
-Tworzenie formularzy:
-
-python
-Copy code
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-Dodanie walidacji:
-Użyj walidatorów z wtforms.validators dla każdego pola formularza.
-
-4. Walidacja Danych Wejściowych:
-Walidacja po stronie serwera:
-Używaj validate_on_submit() w Twoich route'ach, aby upewnić się, że dane są prawidłowe:
-python
-Copy code
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        # przetwarzaj dane
-5. Użycie Walidacji Flask-WTF:
-W formularzach:
-W Twoich formularzach HTML użyj form.field_name.errors do wyświetlania błędów walidacji.
-6. Logging i Flask-Limiter:
-Użycie logging:
-
-python
-Copy code
-import logging
-logging.basicConfig(filename='app.log', level=logging.INFO)
-Flask-Limiter:
-
-python
-Copy code
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
-limiter = Limiter(app, key_func=get_remote_address)
-Zastosuj dekoratory limitów na route'ach:
-
-python
-Copy code
-@app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
-def login():
-    # logika logowania
-
-
-
-
-
-
-
-
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-
-
-class User(db.Model, UserMixin):
-    # reszta definicji klasy
-
-
-
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # logika logowania
-    user = User.query.filter_by(username=username).first()
-    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-        login_user(user)
-        # przekieruj do strony głównej
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-
-
-
-
-
-from flask_security import Security, SQLAlchemyUserDatastore
-
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
-
-
-
-
-
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField
-from wtforms.validators import DataRequired
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-
-
-
-
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        # przetwarzaj dane
-
-
-
-
-
-
-
-
-import logging
-logging.basicConfig(filename='app.log', level=logging.INFO)
-
-
-
-
-
-
-
-
-
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
-limiter = Limiter(app, key_func=get_remote_address)
-
-
-
-
-
-
-
-@app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
-def login():
-    # logika logowania
-
-
-
-
-
-
-
-export function addRow() {
-    const tableBody = document.querySelector("#schedule-table tbody");
-    let row = document.createElement('tr');
-    row.innerHTML = `
-        <td contenteditable="true">Nowy Pracownik</td>
-        <td contenteditable="true">Nowe Stanowisko</td>
-    `;
-    for (let j = 0; j < 7; j++) { // Dla każdego dnia tygodnia
-        row.innerHTML += `
-            <td contenteditable="true" onclick="toggleCell(this)"></td>
-            <td contenteditable="true" onclick="toggleCell(this)"></td>
-            <td contenteditable="true" onclick="toggleCell(this)"></td>
-        `;
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Production Panel</title>
+</head>
+<body>
+<div id="equipment-maintenance">
+    <h2>Utrzymanie Sprzętu</h2>
+
+    <!-- Sekcja dodawania/usuwania maszyn -->
+    <section id="machinery-registry">
+        <h3>Rejestr Maszyn</h3>
+        <form id="add-machine-form">
+            <input type="text" name="machineId" placeholder="ID Maszyny" required>
+            <input type="text" name="model" placeholder="Model" required>
+            <!-- Można dodać więcej pól dla dokumentacji itp. -->
+            <button type="submit">Dodaj Maszynę</button>
+        </form>
+        <div id="machines-list">
+            <!-- Tutaj pojawi się lista maszyn -->
+        </div>
+    </section>
+
+    <!-- Sekcja stanu magazynowego -->
+    <section id="inventory-status">
+        <h3>Stan Magazynowy Części Zamiennych</h3>
+        <div id="parts-list">
+            <!-- Tutaj pojawi się lista części zamiennych -->
+        </div>
+    </section>
+
+    <!-- Sekcja planowania przeglądów -->
+    <section id="maintenance-scheduling">
+        <h3>Planowanie Przeglądów i Konserwacji</h3>
+        <!-- Formularz lub kalendarz do planowania -->
+    </section>
+
+    <!-- Dodatkowe propozycje -->
+    <section id="additional-features">
+        <h3>Dodatkowe Funkcje</h3>
+        <p>Tutaj można dodać dodatkowe funkcje, takie jak historia serwisowa, raporty awarii, czy narzędzia diagnostyczne.</p>
+    </section>
+</div>
+
+<!-- Stylizacja (można przenieść do zewnętrznego pliku CSS) -->
+<style>
+    #equipment-maintenance {
+        font-family: Arial, sans-serif;
     }
-    tableBody.appendChild(row);
-}
+    #equipment-maintenance h2, h3 {
+        color: #333;
+    }
+    #equipment-maintenance form {
+        margin-bottom: 20px;
+    }
+    #equipment-maintenance input[type="text"], #equipment-maintenance button {
+        padding: 10px;
+        margin: 5px 0;
+        display: block;
+    }
+    #equipment-maintenance button {
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+    #equipment-maintenance button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+
+</body>
+</html>

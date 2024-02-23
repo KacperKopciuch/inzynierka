@@ -105,6 +105,14 @@ class QualityDocument(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Device(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(64), nullable=False, unique=True)
+    name = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 with app.app_context():
     db.create_all()
 
@@ -548,6 +556,29 @@ def delete_document(doc_id):
         return jsonify({'message': 'Dokument został usunięty.'}), 200
     except Exception as e:
         return jsonify({'error': 'Błąd podczas usuwania dokumentu: ' + str(e)}), 500
+
+
+@app.route('/api/devices', methods=['POST'])
+def add_device():
+    data = request.json
+    new_device = Device(
+        device_id=data['device_id'],
+        name=data['name'],
+        description=data['description']
+    )
+    db.session.add(new_device)
+    db.session.commit()
+    return jsonify({'message': 'Device added successfully', 'id': new_device.id}), 201
+
+
+@app.route('/api/devices', methods=['GET'])
+def get_devices():
+    devices = Device.query.all()
+    devices_data = [
+        {'id': device.id, 'device_id': device.device_id, 'name': device.name, 'description': device.description}
+        for device in devices
+    ]
+    return jsonify(devices_data)
 
 
 if __name__ == '__main__':
