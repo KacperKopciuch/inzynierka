@@ -30,6 +30,7 @@ function fetchAndDisplayDocuments() {
                     <a href="${doc.file_url}" target="_blank">Otwórz dokument</a>
                 `;
                 documentsList.appendChild(docElement);
+
             });
         });
 }
