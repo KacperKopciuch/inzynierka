@@ -13,7 +13,7 @@
     <div class="sidebar">
         <h2>ID: {{ user_id }}</h2>
         <button id="planning-button">Planowanie produkcji</button>
-        <button>Zarządzanie jakością</button>
+        <button id="manage-docs-button">Zarządzanie jakością</button>
         <button id="manage-personnel">Zarządzanie personelem</button>
         <button>Utrzymanie sprzętu</button>
         <button>Analizy i raporty</button>
@@ -36,6 +36,7 @@
 <script type="module" src="{{ url_for('static', filename='js_management.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='functions.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js_noticeboard.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js_docmanagement.js') }}"></script>
 
 </body>
 </html>

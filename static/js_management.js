@@ -143,3 +143,4 @@ document.getElementById('manage-personnel').addEventListener('click', function()
     document.getElementById('select-row-button').addEventListener('click', enableSelecting);
     document.getElementById('delete-row-button').addEventListener('click', deleteSelectedRows);
 });
+

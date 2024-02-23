@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 # from flask_security import SQLAlchemyUserDatastore, Security, ConfirmRegisterForm
 from flask_sqlalchemy import SQLAlchemy
@@ -10,12 +11,14 @@ from flask_login import login_user
 from flask_login import login_required
 from flask_login import logout_user
 from urllib.parse import urlparse
-from datetime import datetime
 from datetime import datetime, timedelta
+from config import Config
+from flask import send_from_directory
 import bcrypt
 import json
 
 from sqlalchemy.testing.pickleable import Order
+from werkzeug.utils import secure_filename
 
 # import logging
 # from wtforms import StringField
@@ -23,36 +26,15 @@ from sqlalchemy.testing.pickleable import Order
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'tajny_klucz'
-"""
-app.config['SESSION_COOKIE_SECURE'] = True # Tylko przez HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True # Nie dostępne przez JavaScript
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax' # Ogranicza wysyłanie cookie do innych witryn
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+app.config.from_object(Config)
 
-"""
+
 folder_name = 'C:/Users/Kacper/Desktop/Praca INZ/bazadb'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{folder_name}/crm.db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-"""
-# Inicjalizacja Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
-
-# Modyfikacja formularza logowania i rejestracji z użyciem Flask-WTF
-class ExtendedRegisterForm(ConfirmRegisterForm):
-    username = StringField('Username', [Required()])
-
-security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
-
-# Logowanie prób logowania
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-"""
 
 
 @login_manager.user_loader
@@ -109,6 +91,18 @@ class ProductionPlan(db.Model):
 
     def __repr__(self):
         return f'<ProductionPlan {self.product_id}>'
+
+
+with app.app_context():
+    db.create_all()
+
+
+class QualityDocument(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    file_path = db.Column(db.String(255), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 with app.app_context():
@@ -494,6 +488,66 @@ def delete_order(order_id):
         return jsonify({'message': 'Zamówienie usunięte pomyślnie'}), 200
     else:
         return jsonify({'error': 'Zamówienie nie znalezione'}), 404
+
+
+@app.route('/api/upload-document', methods=['POST'])
+def upload_document():
+    title = request.form['title']
+    description = request.form.get('description', '')
+    document = request.files['document']
+
+    if document:
+        filename = secure_filename(document.filename)
+        existing_doc = QualityDocument.query.filter_by(file_path=filename).first()
+
+        if existing_doc:
+            return jsonify({'error': 'Dokument o tej nazwie już istnieje.'}), 400
+
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        document.save(filepath)
+
+        new_document = QualityDocument(title=title, description=description, file_path=filename)
+        db.session.add(new_document)
+        db.session.commit()
+
+        return jsonify({'message': 'Dokument został dodany.'}), 201
+
+    return jsonify({'error': 'Brak pliku.'}), 400
+
+
+@app.route('/api/get-documents', methods=['GET'])
+def get_documents():
+    documents = QualityDocument.query.all()
+    documents_list = []
+
+    for doc in documents:
+        # Pełna ścieżka do pliku
+        file_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], doc.file_path)
+
+        # Sprawdź, czy plik istnieje
+        if os.path.exists(file_path):
+            doc_url = url_for('static', filename=f'quali_docs/{doc.file_path}')
+            documents_list.append({
+                'id': doc.id,
+                'title': doc.title,
+                'description': doc.description if doc.description else "",
+                'file_url': doc_url,
+                'created_at': doc.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+
+    return jsonify(documents_list)
+
+
+@app.route('/api/delete-document/<int:doc_id>', methods=['DELETE'])
+def delete_document(doc_id):
+    document = QualityDocument.query.get_or_404(doc_id)
+    try:
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], document.file_path))  # Usuń plik z serwera
+        db.session.delete(document)  # Usuń wpis z bazy danych
+        db.session.commit()
+        return jsonify({'message': 'Dokument został usunięty.'}), 200
+    except Exception as e:
+        return jsonify({'error': 'Błąd podczas usuwania dokumentu: ' + str(e)}), 500
 
 
 if __name__ == '__main__':
