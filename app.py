@@ -120,6 +120,13 @@ class SparePart(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
 
+class Maintenance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    device_id = db.Column(db.String(64), nullable=False)
+    scheduled_date = db.Column(db.DateTime, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+
 with app.app_context():
     db.create_all()
 
@@ -609,6 +616,31 @@ def get_spare_parts():
         for part in parts
     ]
     return jsonify(parts_data)
+
+
+@app.route('/api/maintenance', methods=['POST'])
+def add_maintenance():
+    data = request.json
+    new_maintenance = Maintenance(
+        device_id=data['device_id'],
+        scheduled_date=datetime.strptime(data['scheduled_date'], '%Y-%m-%d'),
+        description=data['description']
+    )
+    db.session.add(new_maintenance)
+    db.session.commit()
+    return jsonify({'message': 'Maintenance scheduled successfully', 'id': new_maintenance.id}), 201
+
+
+# Endpoint do pobierania przeglądów/konserwacji
+@app.route('/api/maintenance', methods=['GET'])
+def get_maintenance():
+    maintenances = Maintenance.query.all()
+    maintenance_list = [{
+        'device_id': maintenance.device_id,
+        'scheduled_date': maintenance.scheduled_date.strftime('%Y-%m-%d'),
+        'description': maintenance.description
+    } for maintenance in maintenances]
+    return jsonify(maintenance_list)
 
 
 if __name__ == '__main__':

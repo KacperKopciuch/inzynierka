@@ -38,3 +38,11 @@ body {
             flex-grow: 1;
             padding: 20px;
         }
+
+        .maintenance-item {
+            margin-bottom: 15px; /* Doda margines na dole każdego elementu */
+            padding: 10px; /* Doda padding wewnątrz każdego elementu */
+            border: 1px solid #ccc; /* Opcjonalnie, dodaje obramowanie dookoła każdego elementu */
+            border-radius: 5px; /* Opcjonalnie, zaokrągla rogi obramowania */
+            background-color: #f9f9f9; /* Opcjonalnie, dodaje tło każdemu elementowi */
+        }

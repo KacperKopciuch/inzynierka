@@ -8,15 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
             <button id="add-device-btn">Dodaj urządzenie</button>
             <button id="view-devices-btn">Wyświetl urządzenia</button>
             <button id="inventory-btn">Stan magazynowy części zamiennych</button>
+            <button id="schedule-maintenance-btn">Planowanie przeglądów i konserwacji</button>
             <div id="device-form-container"></div>
             <div id="devices-list-container"></div>
             <div id="parts-management-container"></div>
+            <div id="maintenance-planning-container"></div>
         `;
 
         // Nasłuch na nowo dodane przyciski
         document.getElementById('add-device-btn').addEventListener('click', showAddDeviceForm);
         document.getElementById('view-devices-btn').addEventListener('click', showDevicesList);
         document.getElementById('inventory-btn').addEventListener('click', loadSparePartsManagement);
+        document.getElementById('schedule-maintenance-btn').addEventListener('click', loadMaintenanceManagement);
     });
 });
 
@@ -132,4 +135,89 @@ function showPartsList() {
         });
     })
     .catch(error => console.error('Error:', error));
+}
+
+function loadMaintenanceList() {
+    const maintenanceListContainer = document.getElementById('maintenance-list-container');
+
+    fetch('/api/maintenance')
+    .then(response => response.json())
+    .then(maintenances => {
+        maintenanceListContainer.innerHTML = '<h4>Zaplanowane przeglądy/konserwacje:</h4>';
+        maintenances.forEach(maintenance => {
+            const maintenanceItem = document.createElement('div');
+            maintenanceItem.className = 'maintenance-item';
+            maintenanceListContainer.innerHTML += `
+                <div>
+                    <p>ID Urządzenia: ${maintenance.device_id}</p>
+                    <p>Data przeglądu/konserwacji: ${maintenance.scheduled_date}</p>
+                    <p>Opis: ${maintenance.description}</p>
+                </div>
+            `;
+            maintenanceListContainer.appendChild(maintenanceItem);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Nie udało się załadować listy przeglądów/konserwacji');
+    });
+}
+
+function loadMaintenanceManagement() {
+    const maintenanceManagementContainer = document.createElement('div');
+    maintenanceManagementContainer.id = 'maintenance-management-container';
+    maintenanceManagementContainer.innerHTML = `
+        <h3>Planowanie przeglądów i konserwacji</h3>
+        <button id="add-maintenance-btn">Zaplanuj przegląd/konserwację</button>
+        <div id="maintenance-form-container"></div>
+        <div id="maintenance-list-container"></div>
+    `;
+
+    const dynamicContent = document.getElementById('dynamic-content');
+    dynamicContent.appendChild(maintenanceManagementContainer);
+
+
+    // Obsługa przycisku dodawania przeglądu/konserwacji
+    document.getElementById('add-maintenance-btn').addEventListener('click', function() {
+        const maintenanceFormContainer = document.getElementById('maintenance-form-container');
+        maintenanceFormContainer.innerHTML = `
+            <form id="add-maintenance-form">
+                <input type="text" name="device_id" placeholder="ID Urządzenia" required>
+                <input type="date" name="scheduled_date" placeholder="Data przeglądu" required>
+                <textarea name="description" placeholder="Opis"></textarea>
+                <button type="submit">Zaplanuj</button>
+            </form>
+        `;
+
+        // Obsługa zdarzenia submit formularza dodawania przeglądu/konserwacji
+        document.getElementById('add-maintenance-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const maintenanceData = {
+                device_id: formData.get('device_id'),
+                scheduled_date: formData.get('scheduled_date'),
+                description: formData.get('description')
+            };
+
+            // Wywołanie API do dodawania nowego przeglądu/konserwacji
+            fetch('/api/maintenance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(maintenanceData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadMaintenanceList(); // Odświeżenie listy przeglądów/konserwacji
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Nie udało się zaplanować przeglądu/konserwacji');
+            });
+        });
+    });
+
+    loadMaintenanceList(); // Załadowanie listy przeglądów/konserwacji przy inicjalizacji
 }

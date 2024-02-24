@@ -1,76 +1,54 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>Production Panel</title>
-</head>
-<body>
-<div id="equipment-maintenance">
-    <h2>Utrzymanie Sprzętu</h2>
+document.addEventListener('DOMContentLoaded', function() {
+    const maintenanceBtn = document.getElementById('maintenance-btn'); // Id przycisku 'utrzymanie sprzętu'
+    const dynamicContent = document.getElementById('dynamic-content');
 
-    <!-- Sekcja dodawania/usuwania maszyn -->
-    <section id="machinery-registry">
-        <h3>Rejestr Maszyn</h3>
-        <form id="add-machine-form">
-            <input type="text" name="machineId" placeholder="ID Maszyny" required>
-            <input type="text" name="model" placeholder="Model" required>
-            <!-- Można dodać więcej pól dla dokumentacji itp. -->
-            <button type="submit">Dodaj Maszynę</button>
-        </form>
-        <div id="machines-list">
-            <!-- Tutaj pojawi się lista maszyn -->
-        </div>
-    </section>
+    maintenanceBtn.addEventListener('click', function() {
+        dynamicContent.innerHTML = `
+            <h3>Utrzymanie Sprzętu</h3>
+            <button id="add-device-btn">Dodaj urządzenie</button>
+            <button id="view-devices-btn">Wyświetl urządzenia</button>
+            <button id="inventory-btn">Stan magazynowy części zamiennych</button>
+            <div id="device-form-container"></div>
+            <div id="devices-list-container"></div>
+            <div id="parts-management-container"></div>
+        `;
 
-    <!-- Sekcja stanu magazynowego -->
-    <section id="inventory-status">
+        // Nasłuch na nowo dodane przyciski
+        document.getElementById('add-device-btn').addEventListener('click', showAddDeviceForm);
+        document.getElementById('view-devices-btn').addEventListener('click', showDevicesList);
+        document.getElementById('inventory-btn').addEventListener('click', loadSparePartsManagement);
+    });
+});
+
+function showAddDeviceForm() {
+    // Logika pokazująca formularz dodawania urządzenia
+}
+
+function showDevicesList() {
+    // Logika wyświetlająca listę urządzeń
+}
+
+function loadSparePartsManagement() {
+    // Logika zarządzania częściami zamiennymi
+    const partsManagementContainer = document.getElementById('parts-management-container');
+
+    partsManagementContainer.innerHTML = `
         <h3>Stan Magazynowy Części Zamiennych</h3>
-        <div id="parts-list">
-            <!-- Tutaj pojawi się lista części zamiennych -->
-        </div>
-    </section>
+        <button id="add-part-btn">Dodaj część zamienną</button>
+        <button id="view-parts-btn">Wyświetl części zamienne</button>
+        <div id="part-form-container"></div>
+        <div id="parts-list-container"></div>
+    `;
 
-    <!-- Sekcja planowania przeglądów -->
-    <section id="maintenance-scheduling">
-        <h3>Planowanie Przeglądów i Konserwacji</h3>
-        <!-- Formularz lub kalendarz do planowania -->
-    </section>
+    // Dodaj tutaj dodatkowe nasłuchiwacze zdarzeń dla nowo utworzonych przycisków
+    document.getElementById('add-part-btn').addEventListener('click', showAddPartForm);
+    document.getElementById('view-parts-btn').addEventListener('click', showPartsList);
+}
 
-    <!-- Dodatkowe propozycje -->
-    <section id="additional-features">
-        <h3>Dodatkowe Funkcje</h3>
-        <p>Tutaj można dodać dodatkowe funkcje, takie jak historia serwisowa, raporty awarii, czy narzędzia diagnostyczne.</p>
-    </section>
-</div>
+function showAddPartForm() {
+    // Logika pokazująca formularz dodawania części zamiennej
+}
 
-<!-- Stylizacja (można przenieść do zewnętrznego pliku CSS) -->
-<style>
-    #equipment-maintenance {
-        font-family: Arial, sans-serif;
-    }
-    #equipment-maintenance h2, h3 {
-        color: #333;
-    }
-    #equipment-maintenance form {
-        margin-bottom: 20px;
-    }
-    #equipment-maintenance input[type="text"], #equipment-maintenance button {
-        padding: 10px;
-        margin: 5px 0;
-        display: block;
-    }
-    #equipment-maintenance button {
-        cursor: pointer;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-    }
-    #equipment-maintenance button:hover {
-        background-color: #0056b3;
-    }
-</style>
-
-
-</body>
-</html>
+function showPartsList() {
+    // Logika wyświetlająca listę części zamiennych
+}
