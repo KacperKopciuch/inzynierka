@@ -113,6 +113,13 @@ class Device(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class SparePart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    part_id = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+
+
 with app.app_context():
     db.create_all()
 
@@ -579,6 +586,29 @@ def get_devices():
         for device in devices
     ]
     return jsonify(devices_data)
+
+
+@app.route('/api/spare-parts', methods=['POST'])
+def add_spare_part():
+    data = request.get_json()
+    new_part = SparePart(
+        part_id=data['part_id'],
+        name=data['name'],
+        quantity=data['quantity']
+    )
+    db.session.add(new_part)
+    db.session.commit()
+    return jsonify({'message': 'Spare part added successfully'}), 201
+
+
+@app.route('/api/spare-parts', methods=['GET'])
+def get_spare_parts():
+    parts = SparePart.query.all()
+    parts_data = [
+        {'id': part.id, 'part_id': part.part_id, 'name': part.name, 'quantity': part.quantity}
+        for part in parts
+    ]
+    return jsonify(parts_data)
 
 
 if __name__ == '__main__':
