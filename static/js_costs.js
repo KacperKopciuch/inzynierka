@@ -7,7 +7,6 @@ function openNewTabWithContent(htmlContent, chartScript) {
     newWindow.document.close();
 }
 
-
 function loadCostManagementContent() {
     const managementContainer = document.getElementById('dynamic-content'); // Zakładamy, że jest to kontener na dynamiczną treść
     managementContainer.innerHTML = ''; // Czyszczenie zawartości kontenera
@@ -43,10 +42,15 @@ function loadCostManagementContent() {
             </form>
             <button id="efficiency-report-btn">Wyświetl efektywność</button>
         </div>
+        <div id="material-consumption">
+            <button id="material-consumption-btn">Zużycie materiałów</button>
+                <div id="chartContainer">
+
+                </div>
+        </div>
         `;
 
     managementContainer.innerHTML = costContent; // Dodawanie struktury HTML do kontenera
-
 
     const comparisonButton = document.getElementById('btn-comparison');
     if (comparisonButton) {
@@ -120,8 +124,6 @@ function loadCostManagementContent() {
         });
     });
 
-
-
     function fetchCosts() {
         fetch('/api/costs')
         .then(response => response.json())
@@ -137,10 +139,17 @@ function loadCostManagementContent() {
     }
 
     fetchCosts(); // Początkowe załadowanie listy kosztów
+
+    const materialConsumptionBtn = document.getElementById('material-consumption-btn');
+    if (materialConsumptionBtn) {
+        materialConsumptionBtn.addEventListener('click', function() {
+            console.log('Przycisk zużycia materiałów został naciśnięty');
+            // Usunięto kod zmieniający zawartość 'dynamic-content'
+            generateMaterialConsumptionChart(dataLabels, dataSets);
+        });
+    }
+
 }
-
-
-
 
 function loadBudgetComparisonContent() {
     const chartScript = `
@@ -201,8 +210,6 @@ function loadBudgetComparisonContent() {
     openNewTabWithContent(htmlContent, chartScript);
 }
 
-
-
 function loadEfficiencyReportContent() {
     const chartScript = `
         fetch('/api/efficiency')
@@ -260,8 +267,6 @@ function loadEfficiencyReportContent() {
     openNewTabWithContent(htmlContent);
 }
 
-
-
 async function fetchEfficiencyData() {
     try {
         const response = await fetch('/api/efficiency');
@@ -296,8 +301,70 @@ function generateEfficiencyChart(data) {
     });
 }
 
+function generateMaterialConsumptionChart(dataLabels, dataSets) {
+    // Otwieranie nowego okna
+    var newWindow = window.open('', '_blank');
+    newWindow.document.title = "Material Consumption Chart";
+
+    // Tworzenie elementu canvas w nowym oknie
+    var canvas = newWindow.document.createElement('canvas');
+    canvas.id = 'materialConsumptionChart';
+    canvas.width = 50; // Możesz dostosować szerokość
+    canvas.height = 50; // Możesz dostosować wysokość
+    newWindow.document.body.innerHTML = ''; // Czyści poprzednią zawartość nowego okna
+    newWindow.document.body.appendChild(canvas);
+
+    // Dodanie biblioteki Chart.js do nowego okna
+    var scriptTag = newWindow.document.createElement('script');
+    scriptTag.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    newWindow.document.head.appendChild(scriptTag);
+
+    // Oczekiwanie na załadowanie skryptu Chart.js w nowym oknie
+    scriptTag.onload = function () {
+        // Kontekst dla wykresu w nowym oknie
+        var ctx = canvas.getContext('2d');
+
+        // Tworzenie wykresu w nowym oknie
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataLabels, // etykiety osi X
+                datasets: dataSets
+            },
+            options: {
+                scales: {
+                    y: {
+                        ticks: {
+                            beginAtZero: true // zaczynamy skalę od 0
+                        }
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+    };
+}
+
+
+// Przykładowe dane, które mogą być dynamicznie załadowane
+var dataLabels = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec'];
+var dataSets = [{
+    label: 'Zużycie Materiału A',
+    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+    borderColor: 'rgba(255, 99, 132, 1)',
+    data: [0, 10, 5, 2, 20, 30, 45],
+    fill: false
+  },{
+    label: 'Zużycie Materiału B',
+    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+    borderColor: 'rgba(54, 162, 235, 1)',
+    data: [0, 20, 10, 5, 2, 20, 40],
+    fill: false
+}];
+
 
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    // Nasłuchiwanie kliknięcia dla pierwszego przycisku
     document.getElementById('cost-management-tab').addEventListener('click', loadCostManagementContent);
 });

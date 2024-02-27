@@ -144,6 +144,20 @@ class MachineEfficiency(db.Model):
     notes = db.Column(db.Text)
 
 
+class MaterialConsumption(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    material_name = db.Column(db.String(255), nullable=False)
+    consumption_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    quantity_consumed = db.Column(db.Float, nullable=False)
+    unit_cost = db.Column(db.Float, nullable=False)
+
+    def __init__(self, material_name, consumption_date, quantity_consumed, unit_cost):
+        self.material_name = material_name
+        self.consumption_date = consumption_date
+        self.quantity_consumed = quantity_consumed
+        self.unit_cost = unit_cost
+
+
 with app.app_context():
     db.create_all()
 
@@ -702,6 +716,20 @@ def get_efficiency_data():
         for result in results
     ]
     return jsonify(efficiency_data)
+
+
+@app.route('/add_material_consumption', methods=['POST'])
+def add_material_consumption():
+    data = request.json
+    new_consumption = MaterialConsumption(
+        material_name=data['material_name'],
+        consumption_date=data['consumption_date'],
+        quantity_consumed=data['quantity_consumed'],
+        unit_cost=data['unit_cost']
+    )
+    db.session.add(new_consumption)
+    db.session.commit()
+    return jsonify({'message': 'Material consumption data added successfully!'})
 
 
 if __name__ == '__main__':
