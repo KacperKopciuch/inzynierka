@@ -1,3 +1,13 @@
+function openNewTabWithContent(htmlContent, chartScript) {
+    const newWindow = window.open();
+    newWindow.document.open();
+    newWindow.document.write(htmlContent);
+    newWindow.document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>'); // Dodajemy bibliotekę Chart.js
+    newWindow.document.write('<script>' + chartScript + '<\/script>'); // Dodajemy skrypt generujący wykres
+    newWindow.document.close();
+}
+
+
 function loadCostManagementContent() {
     const managementContainer = document.getElementById('dynamic-content'); // Zakładamy, że jest to kontener na dynamiczną treść
     managementContainer.innerHTML = ''; // Czyszczenie zawartości kontenera
@@ -88,31 +98,15 @@ function loadCostManagementContent() {
 
 
 function loadBudgetComparisonContent() {
-    const managementContainer = document.getElementById('dynamic-content');
-    managementContainer.innerHTML = '';
-    managementContainer.innerHTML += `
-        <div id="budget-comparison-container">
-            <h2>Porównanie budżetów</h2>
-            <canvas id="budgetComparisonChart"></canvas>
-        </div>
-    `;
-
-    // Fetch the cost data from the backend
-    fetch('/api/costs')
+    const chartScript = `
+        fetch('/api/costs')
         .then(response => response.json())
         .then(costs => {
-
-            // Prepare the data for the chart
             const labels = costs.map(cost => cost.category);
             const budgetData = costs.map(cost => cost.planbudget);
             const actualData = costs.map(cost => cost.amount);
+            const backgroundColors = budgetData.map((budget, index) => actualData[index] > budget ? 'rgba(255, 99, 132, 0.2)' : 'rgba(75, 192, 192, 0.2)');
 
-            // Calculate the difference for the background color
-            const backgroundColors = budgetData.map((budget, index) => {
-                return actualData[index] > budget ? 'rgba(255, 99, 132, 0.2)' : 'rgba(75, 192, 192, 0.2)'; // red for over budget, green for under
-            });
-
-            // Generate the chart
             const canvas = document.getElementById('budgetComparisonChart');
             new Chart(canvas.getContext('2d'), {
                 type: 'bar',
@@ -135,31 +129,93 @@ function loadBudgetComparisonContent() {
                 options: {
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-
-                            }
+                            beginAtZero: true
                         }
                     }
                 }
             });
         })
         .catch(error => console.error('Error:', error));
-}
-
-function loadEfficiencyReportContent() {
-    const managementContainer = document.getElementById('dynamic-content');
-    managementContainer.innerHTML = '';
-    managementContainer.innerHTML += `
-        <div id="efficiency-report-container">
-            <h2>Raport efektywności</h2>
-            <canvas id="efficiencyChart"></canvas>
-        </div>
     `;
 
-    // Teraz, gdy struktura jest gotowa, możemy załadować dane i wygenerować wykres
-    fetchEfficiencyData();
+    let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Porównanie Budżetu</title>
+        </head>
+        <body>
+            <div id="budget-comparison-container" style="width: 1200px; height: 600px;">
+                <h2>Porównanie budżetów</h2>
+                <canvas id="budgetComparisonChart"></canvas>
+            </div>
+        </body>
+        </html>
+    `;
+
+    openNewTabWithContent(htmlContent, chartScript);
 }
+
+
+
+function loadEfficiencyReportContent() {
+    const chartScript = `
+        fetch('/api/efficiency')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.machineName),
+                    datasets: [{
+                        label: 'Wykorzystanie maszyn [%]',
+                        data: data.map(item => item.usagePercentage),
+                        backgroundColor: 'rgba(75, 192, 235, 0.2)',
+                        borderColor: 'rgba(75, 192, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    maintainAspectRatio: false // Kontroluje rozmiar wykresu
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    `;
+
+    let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Raport efektywności</title>
+            <style>
+                canvas {
+                    width: 800px;  /* Możesz dostosować */
+                    height: 400px; /* Możesz dostosować */
+                }
+            </style>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Link do Chart.js -->
+        </head>
+        <body>
+            <div id="efficiency-report-container" style="width: 800px; height: 400px;">
+                <h2>Raport efektywności</h2>
+                <canvas id="efficiencyChart"></canvas>
+            </div>
+            <script>${chartScript}</script>
+        </body>
+        </html>
+    `;
+
+    openNewTabWithContent(htmlContent);
+}
+
+
 
 async function fetchEfficiencyData() {
     try {
