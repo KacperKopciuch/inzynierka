@@ -32,6 +32,15 @@ function loadCostManagementContent() {
             <button id="btn-comparison">Wyświetl porównanie budżetów</button>
         </div>
         <div id="efficiency-charts">
+            <form id="efficiency-form" action="/add_efficiency" method="post">
+                <label for="machineName">Nazwa Maszyny:</label>
+                <input type="text" id="machineName" name="machineName"><br><br>
+                <label for="usagePercentage">Procent Wykorzystania:</label>
+                <input type="number" id="usagePercentage" name="usagePercentage" step="0.01"><br><br>
+                <label for="measurementDate">Data Pomiaru:</label>
+                <input type="datetime-local" id="measurementDate" name="measurementDate"><br><br>
+                <input type="submit" value="Submit">
+            </form>
             <button id="efficiency-report-btn">Wyświetl efektywność</button>
         </div>
         `;
@@ -77,6 +86,42 @@ function loadCostManagementContent() {
         .catch(error => console.error('Error:', error));
     });
 
+    const efficiencyForm = document.getElementById('efficiency-form');
+    efficiencyForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let object = {};
+        const formData = new FormData(this);
+        formData.forEach((value, key) => {
+            // Przekształć wszystkie wartości formularza w obiekt JavaScript
+            object[key] = value;
+        });
+        let json = JSON.stringify(object);
+
+        fetch('/add_efficiency', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: json
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            efficiencyForm.reset();
+            alert(data.message);
+            // Tutaj możesz dodać kod, aby zaktualizować interfejs użytkownika
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+    });
+
+
+
     function fetchCosts() {
         fetch('/api/costs')
         .then(response => response.json())
@@ -85,7 +130,7 @@ function loadCostManagementContent() {
             listContainer.innerHTML = ''; // Czyszczenie listy
             costs.forEach(cost => {
                 // Dodawanie każdego kosztu do listy
-                listContainer.innerHTML += `<div class="cost-item">${cost.category}: ${cost.amount} zł - ${cost.planbudget} zł - ${cost.date} - ${cost.description}</div>`;
+                listContainer.innerHTML += `<div class="cost-item">${cost.category}: ${cost.amount}zł, Planowany budżet: ${cost.planbudget}zł, Przedział czasowy do: ${cost.date}, Opis: ${cost.description}</div>`;
             });
         })
         .catch(error => console.error('Error:', error));

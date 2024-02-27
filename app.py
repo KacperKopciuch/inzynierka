@@ -136,6 +136,14 @@ class Cost(db.Model):
     description = db.Column(db.Text, nullable=True)
 
 
+class MachineEfficiency(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    machineName = db.Column(db.String(255), nullable=False)
+    usagePercentage = db.Column(db.Float, nullable=False)
+    measurementDate = db.Column(db.DateTime, nullable=False)
+    notes = db.Column(db.Text)
+
+
 with app.app_context():
     db.create_all()
 
@@ -667,13 +675,31 @@ def add_cost():
     return jsonify({'message': 'Cost added successfully'}), 201
 
 
+@app.route('/add_efficiency', methods=['POST'])
+def add_efficiency():
+    try:
+        data = request.json
+        machine_name = data['machineName']
+        usage_percentage = float(data['usagePercentage'])
+        measurement_date_string = data['measurementDate']
+        measurement_date = datetime.strptime(measurement_date_string, '%Y-%m-%dT%H:%M')
+
+        new_record = MachineEfficiency(machineName=machine_name, usagePercentage=usage_percentage, measurementDate=measurement_date)
+        db.session.add(new_record)
+        db.session.commit()
+
+        return jsonify({'message': 'Data added successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
 @app.route('/api/efficiency', methods=['GET'])
 def get_efficiency_data():
-    # Tutaj powinieneś pobrać dane o efektywności, np. z bazy danych
+    results = MachineEfficiency.query.all()
     efficiency_data = [
-        {'machineName': 'Maszyna 1', 'usagePercentage': 75},
-        {'machineName': 'Maszyna 2', 'usagePercentage': 60},
-        # itd.
+        {'machineName': result.machineName, 'usagePercentage': result.usagePercentage}
+        for result in results
     ]
     return jsonify(efficiency_data)
 
