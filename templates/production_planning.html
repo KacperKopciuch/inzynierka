@@ -7,7 +7,6 @@
 </head>
 <body>
     <h1>Planowanie Produkcji</h1>
-    <!-- Tutaj możesz dodać formularz planowania produkcji lub inne elementy interfejsu użytkownika -->
     <div id="production-planning-form">
         <form id="planning-form" method="post" action="/api/submit-production-plan">
             <label for="product-id">ID Produktu:</label>
@@ -26,7 +25,6 @@
         </form>
     </div>
     <div id="orders-list">
-  <!-- Tutaj będą wyświetlane zamówienia -->
     </div>
 
 <script src="{{ url_for('static', filename='form_handler.js') }}"></script>

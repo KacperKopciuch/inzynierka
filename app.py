@@ -127,6 +127,15 @@ class Maintenance(db.Model):
     description = db.Column(db.Text, nullable=True)
 
 
+class Cost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    planbudget = db.Column(db.Float, nullable=True)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    description = db.Column(db.Text, nullable=True)
+
+
 with app.app_context():
     db.create_all()
 
@@ -565,7 +574,7 @@ def delete_document(doc_id):
     document = QualityDocument.query.get_or_404(doc_id)
     try:
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], document.file_path))  # Usuń plik z serwera
-        db.session.delete(document)  # Usuń wpis z bazy danych
+        db.session.delete(document)
         db.session.commit()
         return jsonify({'message': 'Dokument został usunięty.'}), 200
     except Exception as e:
@@ -641,6 +650,32 @@ def get_maintenance():
         'description': maintenance.description
     } for maintenance in maintenances]
     return jsonify(maintenance_list)
+
+
+@app.route('/api/costs', methods=['GET'])
+def get_costs():
+    costs = Cost.query.all()
+    return jsonify([{'id': cost.id, 'category': cost.category, 'amount': cost.amount, 'planbudget': cost.planbudget, 'date': cost.date.strftime('%Y-%m-%d'), 'description': cost.description} for cost in costs])
+
+
+@app.route('/api/costs', methods=['POST'])
+def add_cost():
+    data = request.json
+    new_cost = Cost(category=data['category'], amount=data['amount'], planbudget=data['planbudget'], description=data['description'])
+    db.session.add(new_cost)
+    db.session.commit()
+    return jsonify({'message': 'Cost added successfully'}), 201
+
+
+@app.route('/api/efficiency', methods=['GET'])
+def get_efficiency_data():
+    # Tutaj powinieneś pobrać dane o efektywności, np. z bazy danych
+    efficiency_data = [
+        {'machineName': 'Maszyna 1', 'usagePercentage': 75},
+        {'machineName': 'Maszyna 2', 'usagePercentage': 60},
+        # itd.
+    ]
+    return jsonify(efficiency_data)
 
 
 if __name__ == '__main__':
