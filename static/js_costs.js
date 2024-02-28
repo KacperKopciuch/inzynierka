@@ -24,13 +24,17 @@ function loadCostManagementContent() {
                 <button type="submit">Dodaj koszt</button>
             </form>
             <div id="costs-list-container">
-                <!-- Tutaj będą wyświetlane koszty -->
+
             </div>
         </div>
+        <br/><br/><br/>
         <div id="budget-comparison">
+            <h2>Porównanie budżetów</h2>
             <button id="btn-comparison">Wyświetl porównanie budżetów</button>
         </div>
+        <br/><br/><br/>
         <div id="efficiency-charts">
+            <h2>Efektywność</h2>
             <form id="efficiency-form" action="/add_efficiency" method="post">
                 <label for="machineName">Nazwa Maszyny:</label>
                 <input type="text" id="machineName" name="machineName"><br><br>
@@ -38,14 +42,25 @@ function loadCostManagementContent() {
                 <input type="number" id="usagePercentage" name="usagePercentage" step="0.01"><br><br>
                 <label for="measurementDate">Data Pomiaru:</label>
                 <input type="datetime-local" id="measurementDate" name="measurementDate"><br><br>
-                <input type="submit" value="Submit">
+                <input type="submit" id="add-efe" value="Dodaj efektywność">
+                <button id="efficiency-report-btn">Wyświetl efektywność</button>
             </form>
-            <button id="efficiency-report-btn">Wyświetl efektywność</button>
         </div>
+        <br/><br/><br/>
         <div id="material-consumption">
-            <button id="material-consumption-btn">Zużycie materiałów</button>
+            <h2>Zużycie materiałów</h2>
                 <div id="chartContainer">
-
+                    <form id="consumptionForm">
+                        <label for="material_name">Materiał:</label>
+                        <input type="text" id="material_name" name="material_name" required><br><br>
+                        <label for="consumption_date">Data zużycia:</label>
+                        <input type="date" id="consumption_date" name="consumption_date" required><br><br>
+                        <label for="quantity_consumed">Zużyta ilość:</label>
+                        <input type="number" id="quantity_consumed" name="quantity_consumed" step="0.01" required><br><br>
+                        <label for="unit_cost">Koszt jednostkowy:</label>
+                        <input type="number" id="unit_cost" name="unit_cost" step="0.01" required><br><br>
+                        <button type="submit">Dodaj zużycie</button> <button id="material-consumption-btn">Wyświetl zużycie materiałów</button>
+                    </form>
                 </div>
         </div>
         `;
@@ -144,10 +159,88 @@ function loadCostManagementContent() {
     if (materialConsumptionBtn) {
         materialConsumptionBtn.addEventListener('click', function() {
             console.log('Przycisk zużycia materiałów został naciśnięty');
-            // Usunięto kod zmieniający zawartość 'dynamic-content'
-            generateMaterialConsumptionChart(dataLabels, dataSets);
+            // Pobieranie danych z endpointu
+            fetch('/getMaterialConsumption')
+                .then(response => response.json())
+                .then(data => {
+                    // Przygotowanie danych dla wykresu
+                    const labels = data.map(item => `${item.consumption_date} (${item.material_name})`);
+                    const dataQuantity = {
+                        label: 'Zużyta ilość',
+                        data: data.map(item => item.quantity_consumed),
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    };
+                    const dataCost = {
+                        label: 'Koszt jednostkowy',
+                        data: data.map(item => item.unit_cost),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    };
+                    // Generowanie wykresu
+                    generateMaterialConsumptionChart(labels, [dataQuantity, dataCost]);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+                    let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Raport efektywności</title>
+            <style>
+                canvas {
+                    width: 800px;  /* Możesz dostosować */
+                    height: 400px; /* Możesz dostosować */
+                }
+            </style>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Link do Chart.js -->
+        </head>
+        <body>
+            <div id="efficiency-report-container" style="width: 800px; height: 400px;">
+                <h2>Raport efektywności</h2>
+                <canvas id="efficiencyChart"></canvas>
+            </div>
+            <script>${chartScript}</script>
+        </body>
+        </html>
+    `;
         });
     }
+
+
+    const consumptionForm = document.getElementById('consumptionForm');
+    consumptionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            material_name: this.material_name.value,
+            consumption_date: this.consumption_date.value,
+            quantity_consumed: parseFloat(this.quantity_consumed.value),
+            unit_cost: parseFloat(this.unit_cost.value),
+        };
+
+        fetch('/addMaterialConsumption', { // Upewnij się, że endpoint pasuje do Twojego URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            // Opcjonalnie: odśwież wykres lub tabelę z danymi
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+        // Czyszczenie formularza
+        this.reset();
+    });
 
 }
 
@@ -255,7 +348,7 @@ function loadEfficiencyReportContent() {
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Link do Chart.js -->
         </head>
         <body>
-            <div id="efficiency-report-container" style="width: 800px; height: 400px;">
+            <div id="efficiency-report-container" style="width: 1200px; height: 600px;">
                 <h2>Raport efektywności</h2>
                 <canvas id="efficiencyChart"></canvas>
             </div>
@@ -326,7 +419,7 @@ function generateMaterialConsumptionChart(dataLabels, dataSets) {
 
         // Tworzenie wykresu w nowym oknie
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar', // zmiana z 'line' na 'bar' jeśli chcesz słupkowy
             data: {
                 labels: dataLabels, // etykiety osi X
                 datasets: dataSets
@@ -334,35 +427,32 @@ function generateMaterialConsumptionChart(dataLabels, dataSets) {
             options: {
                 scales: {
                     y: {
-                        ticks: {
-                            beginAtZero: true // zaczynamy skalę od 0
+                        beginAtZero: true, // zaczynamy skalę od 0
+                        scaleLabel: {
+                            display: true,
+                            labelString: material_name + ' (Ilość / Koszt)' // dodanie material_name do etykiety osi Y
+                        }
+                    },
+                    x: {
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Data'
                         }
                     }
+                },
+                title: {
+                    display: true,
+                    text: 'Analiza zużycia materiałów dla: ' + material_name
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
                 },
                 maintainAspectRatio: false
             }
         });
     };
 }
-
-
-// Przykładowe dane, które mogą być dynamicznie załadowane
-var dataLabels = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec'];
-var dataSets = [{
-    label: 'Zużycie Materiału A',
-    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-    borderColor: 'rgba(255, 99, 132, 1)',
-    data: [0, 10, 5, 2, 20, 30, 45],
-    fill: false
-  },{
-    label: 'Zużycie Materiału B',
-    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-    borderColor: 'rgba(54, 162, 235, 1)',
-    data: [0, 20, 10, 5, 2, 20, 40],
-    fill: false
-}];
-
-
 
 document.addEventListener('DOMContentLoaded', (event) => {
     // Nasłuchiwanie kliknięcia dla pierwszego przycisku

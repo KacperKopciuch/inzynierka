@@ -1,0 +1,118 @@
+.cost-management-tab .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.cost-management-tab .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.cost-management-tab .col {
+  flex: 1;
+  padding: 0 15px;
+}
+
+.cost-management-tab h1, .cost-management-tab h2, .cost-management-tab h3 {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.cost-management-tab button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.cost-management-tab button:hover {
+  background-color: #0056b3;
+}
+
+.cost-management-tab input[type="text"],
+.cost-management-tab input[type="number"],
+.cost-management-tab input[type="date"],
+.cost-management-tab select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.cost-management-tab textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.cost-management-tab .table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.cost-management-tab .table th,
+.cost-management-tab .table td {
+  text-align: left;
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.cost-management-tab .table th {
+  background-color: #f8f9fa;
+}
+
+.cost-management-tab .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0,0,0,.05);
+}
+
+.cost-management-tab .alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.cost-management-tab .alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.cost-management-tab .alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.cost-management-tab .alert-info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.cost-management-tab .btn-primary {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.cost-management-tab .btn-secondary {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+/* Dodaj tutaj więcej swoich stylów */

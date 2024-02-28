@@ -51,3 +51,38 @@ function showAddPartForm() {
 function showPartsList() {
     // Logika wyświetlająca listę części zamiennych
 }
+
+
+
+
+
+
+    const consumptionForm = document.getElementById('consumptionForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            month: this.month.value,
+            materialA: parseFloat(this.materialA.value),
+            materialB: parseFloat(this.materialB.value),
+        };
+
+        fetch('/addConsumption', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            // Opcjonalnie: odśwież wykres lub tabelę z danymi
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+        // Czyszczenie formularza
+        this.reset();
+
+    });

@@ -718,18 +718,27 @@ def get_efficiency_data():
     return jsonify(efficiency_data)
 
 
-@app.route('/add_material_consumption', methods=['POST'])
+@app.route('/addMaterialConsumption', methods=['POST'])
 def add_material_consumption():
-    data = request.json
-    new_consumption = MaterialConsumption(
-        material_name=data['material_name'],
-        consumption_date=data['consumption_date'],
-        quantity_consumed=data['quantity_consumed'],
-        unit_cost=data['unit_cost']
-    )
-    db.session.add(new_consumption)
-    db.session.commit()
-    return jsonify({'message': 'Material consumption data added successfully!'})
+    try:
+        data = request.json
+        new_consumption = MaterialConsumption(
+            material_name=data['material_name'],
+            consumption_date=datetime.strptime(data['consumption_date'], '%Y-%m-%d'),
+            quantity_consumed=data['quantity_consumed'],
+            unit_cost=data['unit_cost']
+        )
+        db.session.add(new_consumption)
+        db.session.commit()
+        return jsonify({"message": "Material consumption data added successfully!"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route('/getMaterialConsumption', methods=['GET'])
+def get_material_consumption():
+    consumption_list = MaterialConsumption.query.all()
+    return jsonify([{'material_name': item.material_name, 'consumption_date': item.consumption_date.strftime('%Y-%m-%d'), 'quantity_consumed': item.quantity_consumed, 'unit_cost': item.unit_cost} for item in consumption_list])
 
 
 if __name__ == '__main__':
