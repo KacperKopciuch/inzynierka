@@ -13,7 +13,7 @@
     <div class="sidebar">
         <h2>ID: {{ user_id }}</h2>
         <button id="planning-button">Planowanie produkcji</button>
-        <button>Zarządzanie jakością</button>
+        <button id="quality-management-tab">Zarządzanie jakością</button>
         <button id="manage-personnel">Zarządzanie personelem</button>
         <button id="maintenance-btn">Utrzymanie sprzętu</button>
         <button>Analizy i raporty</button>
@@ -39,6 +39,7 @@
 <script type="module" src="{{ url_for('static', filename='js_eq.js') }}"></script>
 <script type="module" src="{{ url_for('static', filename='js_costs.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="{{ url_for('static', filename='js_qualiman.js') }}"></script>
 
 
 

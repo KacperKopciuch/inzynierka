@@ -158,6 +158,27 @@ class MaterialConsumption(db.Model):
         self.unit_cost = unit_cost
 
 
+class QualityKPI(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    value = db.Column(db.Float, nullable=False)
+    trend = db.Column(db.String(10))  # przykład: 'up', 'down', 'stable'
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<QualityKPI {self.name}>'
+
+
+class AuditSchedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    audit_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    audit_type = db.Column(db.String(50), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+
+    def __repr__(self):
+        return f'<Audit {self.audit_type} - {self.subject}>'
+
+
 with app.app_context():
     db.create_all()
 
@@ -739,6 +760,29 @@ def add_material_consumption():
 def get_material_consumption():
     consumption_list = MaterialConsumption.query.all()
     return jsonify([{'material_name': item.material_name, 'consumption_date': item.consumption_date.strftime('%Y-%m-%d'), 'quantity_consumed': item.quantity_consumed, 'unit_cost': item.unit_cost} for item in consumption_list])
+
+
+@app.route('/api/kpis', methods=['GET'])
+def get_kpis():
+    kpis = QualityKPI.query.all()
+    return jsonify([{
+        'name': kpi.name,
+        'value': kpi.value,
+        'trend': kpi.trend,
+        'last_updated': kpi.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+    } for kpi in kpis])
+
+
+@app.route('/api/audits')
+def get_audits():
+    audits = AuditSchedule.query.all()
+    return jsonify([
+        {
+            "date": audit.audit_date.strftime('%Y-%m-%d'),
+            "type": audit.audit_type,
+            "subject": audit.subject
+        } for audit in audits
+    ])
 
 
 if __name__ == '__main__':
