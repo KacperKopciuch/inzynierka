@@ -214,6 +214,31 @@ class ProcessOptimization(db.Model):
         }
 
 
+class PerformanceIndicator(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cycle_time = db.Column(db.Float, nullable=True)  # czas cyklu
+    downtime = db.Column(db.Float, nullable=True)  # czas przestojów
+    machine_efficiency = db.Column(db.Float, nullable=True)  # wydajność maszyn
+    product_quality = db.Column(db.Float, nullable=True)  # jakość wyrobów
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, cycle_time, downtime, machine_efficiency, product_quality):
+        self.cycle_time = cycle_time
+        self.downtime = downtime
+        self.machine_efficiency = machine_efficiency
+        self.product_quality = product_quality
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'cycle_time': self.cycle_time,
+            'downtime': self.downtime,
+            'machine_efficiency': self.machine_efficiency,
+            'product_quality': self.product_quality,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S') if self.timestamp else 'Brak danych'
+        }
+
+
 with app.app_context():
     db.create_all()
 
@@ -855,6 +880,32 @@ def add_process_optimization():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/performance_indicators', methods=['GET', 'POST'])
+def performance_indicators():
+    if request.method == 'GET':
+        # Pobieranie wszystkich wskaźników z bazy danych
+        indicators = PerformanceIndicator.query.all()
+        return jsonify([indicator.serialize() for indicator in indicators])
+
+    elif request.method == 'POST':
+        # Dodawanie nowego wskaźnika do bazy danych
+        data = request.json
+        try:
+            new_indicator = PerformanceIndicator(
+                cycle_time=data.get('cycle_time'),
+                downtime=data.get('downtime'),
+                machine_efficiency=data.get('machine_efficiency'),
+                product_quality=data.get('product_quality'),
+                timestamp=datetime.utcnow()  # Automatycznie zapisuje aktualną datę i czas
+            )
+            db.session.add(new_indicator)
+            db.session.commit()
+            return jsonify({'message': 'New performance indicator added successfully'}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
 
 
 if __name__ == '__main__':
