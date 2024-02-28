@@ -189,6 +189,31 @@ class QualityReport(db.Model):
         return '<QualityReport {}>'.format(self.report_type)
 
 
+class ProcessOptimization(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    process_name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    improvement_suggestion = db.Column(db.Text, nullable=True)
+    impact_assessment = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, process_name, description, improvement_suggestion, impact_assessment):
+        self.process_name = process_name
+        self.description = description
+        self.improvement_suggestion = improvement_suggestion
+        self.impact_assessment = impact_assessment
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'process_name': self.process_name,
+            'description': self.description,
+            'improvement_suggestion': self.improvement_suggestion,
+            'impact_assessment': self.impact_assessment,
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+
 with app.app_context():
     db.create_all()
 
@@ -805,6 +830,31 @@ def get_quality_reports():
 def download_quality_report(report_id):
     report = QualityReport.query.get_or_404(report_id)
     return send_from_directory(directory=os.path.dirname(report.file_path), filename=os.path.basename(report.file_path), as_attachment=True)
+
+
+@app.route('/api/process_optimization', methods=['GET'])
+def get_process_optimization():
+    processes = ProcessOptimization.query.all()
+    return jsonify([process.serialize() for process in processes])
+
+
+@app.route('/api/process_optimization', methods=['POST'])
+def add_process_optimization():
+    data = request.json
+    try:
+
+        new_process = ProcessOptimization(
+            process_name=data['process_name'],
+            description=data['description'],
+            improvement_suggestion=data['improvement_suggestion'],
+            impact_assessment=data['impact_assessment'],
+        )
+        db.session.add(new_process)
+        db.session.commit()
+        return jsonify({'message': 'Process optimization added successfully'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
 
 
 if __name__ == '__main__':
