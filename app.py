@@ -179,6 +179,16 @@ class AuditSchedule(db.Model):
         return f'<Audit {self.audit_type} - {self.subject}>'
 
 
+class QualityReport(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    report_type = db.Column(db.String(50))
+    report_date = db.Column(db.Date, default=datetime.utcnow)
+    file_path = db.Column(db.String(200))
+
+    def __repr__(self):
+        return '<QualityReport {}>'.format(self.report_type)
+
+
 with app.app_context():
     db.create_all()
 
@@ -783,6 +793,18 @@ def get_audits():
             "subject": audit.subject
         } for audit in audits
     ])
+
+
+@app.route('/api/quality-reports')
+def get_quality_reports():
+    reports = QualityReport.query.all()
+    return jsonify([{"id": report.id, "report_type": report.report_type, "report_date": report.report_date.strftime('%Y-%m-%d'), "file_path": report.file_path} for report in reports])
+
+
+@app.route('/api/quality-reports/<int:report_id>')
+def download_quality_report(report_id):
+    report = QualityReport.query.get_or_404(report_id)
+    return send_from_directory(directory=os.path.dirname(report.file_path), filename=os.path.basename(report.file_path), as_attachment=True)
 
 
 if __name__ == '__main__':

@@ -47,6 +47,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         loadAuditsSchedule();
 
+        // Sekcja raportów
+        const qualityReportsSection = document.createElement('div');
+        qualityReportsSection.className = 'quality-reports-section';
+        qualityReportsSection.id = 'quality-reports-section';
+        qualityReportsSection.innerHTML = `
+            <h3>Raporty</h3>
+        `;
+        managementContainer.appendChild(qualityReportsSection);
+
+        loadQualityReports()
+
+
         fetch('/api/kpis')
         .then(response => response.json())
         .then(kpis => {
@@ -91,5 +103,27 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(error => {
                 console.error('Błąd:', error); // Debug
             });
+    }
+
+    function loadQualityReports() {
+        const reportsSection = document.getElementById('quality-reports-section');
+        if (!reportsSection) return;
+
+        fetch('/api/quality-reports')
+            .then(response => response.json())
+            .then(reports => {
+                const list = document.createElement('ul');
+                reports.forEach(report => {
+                    const listItem = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.href = `/api/quality-reports/${report.id}`;
+                    link.textContent = `${report.report_type} - ${report.report_date}`;
+                    link.setAttribute('download', true);
+                    listItem.appendChild(link);
+                    list.appendChild(listItem);
+                });
+                reportsSection.appendChild(list);
+            })
+            .catch(error => console.error('Error:', error));
     }
 });
