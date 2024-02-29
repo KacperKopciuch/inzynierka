@@ -897,8 +897,7 @@ def performance_indicators():
                 cycle_time=data.get('cycle_time'),
                 downtime=data.get('downtime'),
                 machine_efficiency=data.get('machine_efficiency'),
-                product_quality=data.get('product_quality'),
-                timestamp=datetime.utcnow()  # Automatycznie zapisuje aktualną datę i czas
+                product_quality=data.get('product_quality')
             )
             db.session.add(new_indicator)
             db.session.commit()

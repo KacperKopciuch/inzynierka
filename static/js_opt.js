@@ -145,12 +145,11 @@ function loadPerformanceIndicators() {
                 const indicatorElement = document.createElement('div');
                 indicatorElement.className = 'indicator-card';
                 indicatorElement.innerHTML = `
-                    <h2>Wskaźnik wydajności</h2>
                     <h3>Data pomiaru: ${indicator.timestamp}</h3>
                     <p>Czas cyklu: ${indicator.cycle_time} godzin</p>
                     <p>Czas przestojów: ${indicator.downtime} godzin</p>
                     <p>Wydajność maszyn: ${indicator.machine_efficiency}%</p>
-                    <p>Jakość wyrobów: ${indicator.product_quality}%</p>
+                    <p>Jakość wyrobów: ${indicator.product_quality}%</p><br>
                 `;
                 indicatorsContainer.appendChild(indicatorElement);
             });
