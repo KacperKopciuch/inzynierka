@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (processOptimizationTab) {
         processOptimizationTab.addEventListener('click', function() {
             const managementContainer = document.getElementById('dynamic-content');
-            managementContainer.innerHTML = '<h2>Optymalizacja procesów produkcyjnych</h2>';
+            managementContainer.innerHTML = '';
 
             const formHtml = `
                 <form id="add-process-form">
@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     <textarea id="impact_assessment" name="impact_assessment" placeholder="Ocena wpływu" required></textarea><br><br>
                     <button type="submit">Dodaj proces</button>
                 </form>
+                <button id="show-optimization">Pokaż Optymalizację Procesów</button><br><br><br>
+                <div id="optimization-container" style="display:none;"></div>
+
                 <form id="add-performance-indicator-form">
                     <h3>Dodaj nowy wskaźnik wydajności:</h3>
                     <input type="number" id="cycle_time" name="cycle_time" placeholder="Czas cyklu" step="any" required><br><br>
@@ -22,47 +25,102 @@ document.addEventListener("DOMContentLoaded", function() {
                     <input type="number" id="product_quality" name="product_quality" placeholder="Jakość wyrobów" step="any" required><br><br>
                     <button type="submit">Dodaj wskaźnik</button>
                 </form>
+                <button id="show-performance">Pokaż Wskaźniki Wydajności</button><br><br><br>
+                <div id="performance-indicators-container" style="display:none;"></div>
             `;
-            managementContainer.insertAdjacentHTML('afterbegin', formHtml); // Dodaj formularz na początku kontenera
+            managementContainer.insertAdjacentHTML('afterbegin', formHtml);
+            setupFormListeners();
+        });
+    }
 
-            const addProcessForm = document.getElementById('add-process-form');
-            if (addProcessForm) {
-                addProcessForm.addEventListener('submit', function(e) {
-                    e.preventDefault(); // Zapobieganie domyślnej akcji formularza
+    function setupFormListeners() {
+        const addProcessForm = document.getElementById('add-process-form');
+        const addPerformanceForm = document.getElementById('add-performance-indicator-form');
+        const showOptimizationButton = document.getElementById('show-optimization');
+        const showPerformanceButton = document.getElementById('show-performance');
 
-                    // Pobranie danych z formularza
-                    const formData = {
-                        process_name: this.process_name.value,
-                        description: this.description.value,
-                        improvement_suggestion: this.improvement_suggestion.value,
-                        impact_assessment: this.impact_assessment.value,
-                    };
+        if (addProcessForm) {
+            addProcessForm.addEventListener('submit', handleProcessFormSubmit);
+        }
 
-                    // Wysyłanie danych do serwera
-                    fetch('/api/process_optimization', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(formData),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message); // Powiadomienie użytkownika o wyniku
-                        this.reset(); // Czyszczenie formularza po pomyślnym dodaniu
-                        // Opcjonalnie odśwież listę procesów
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                });
-            }
+        if (addPerformanceForm) {
+            addPerformanceForm.addEventListener('submit', handlePerformanceFormSubmit);
+        }
 
-            // Tutaj dodaj kod do wczytywania istniejących procesów
-            fetch('/api/process_optimization')
+        if (showOptimizationButton) {
+            showOptimizationButton.addEventListener('click', function() {
+                const optimizationContainer = document.getElementById('optimization-container');
+                optimizationContainer.style.display = optimizationContainer.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        if (showPerformanceButton) {
+            showPerformanceButton.addEventListener('click', function() {
+                const performanceContainer = document.getElementById('performance-indicators-container');
+                performanceContainer.style.display = performanceContainer.style.display === 'none' ? 'block' : 'none';
+                if (performanceContainer.style.display === 'block') {
+                    loadPerformanceIndicators(); // Ładuje wskaźniki tylko, gdy sekcja jest widoczna
+                }
+            });
+        }
+    }
+
+
+    function handleProcessFormSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = {
+            process_name: form.process_name.value,
+            description: form.description.value,
+            improvement_suggestion: form.improvement_suggestion.value,
+            impact_assessment: form.impact_assessment.value,
+        };
+
+        fetch('/api/process_optimization', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            form.reset();
+            fetchExistingProcesses();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function handlePerformanceFormSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = {
+            cycle_time: parseFloat(form.cycle_time.value),
+            downtime: parseFloat(form.downtime.value),
+            machine_efficiency: parseFloat(form.machine_efficiency.value),
+            product_quality: parseFloat(form.product_quality.value),
+        };
+
+        fetch('/api/performance_indicators', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            form.reset();
+            loadPerformanceIndicators();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function fetchExistingProcesses() {
+        const optimizationContainer = document.getElementById('optimization-container');
+        optimizationContainer.innerHTML = ''; // Czyści istniejącą zawartość kontenera
+
+        fetch('/api/process_optimization')
             .then(response => response.json())
             .then(processes => {
-                const processesContainer = document.createElement('div');
-                processesContainer.id = 'processes-container';
-
                 processes.forEach(process => {
                     const processCard = document.createElement('div');
                     processCard.className = 'process-card';
@@ -73,86 +131,33 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p>Ocena wpływu: ${process.impact_assessment}</p>
                         <p>Ostatnia aktualizacja: ${process.updated_at}</p><br>
                     `;
-                    processesContainer.appendChild(processCard);
+                    optimizationContainer.appendChild(processCard);
                 });
-                managementContainer.appendChild(processesContainer); // Dodanie procesów pod formularze
-            })
-            .catch(error => console.error('Błąd:', error));
-
-            fetchExistingProcessesAndPerformanceIndicators();
-        });
-    }
-});
-
-function fetchExistingProcessesAndPerformanceIndicators() {
-    const managementContainer = document.getElementById('dynamic-content');
-
-    // Wczytanie istniejących procesów
-    fetch('/api/process_optimization')
-        .then(response => response.json())
-        .then(processes => {
-            const processesContainer = document.createElement('div');
-            processesContainer.id = 'processes-container';
-            // Dodawanie procesów do processesContainer...
-            managementContainer.appendChild(processesContainer);
-        })
-        .then(() => {
-            // Po wczytaniu wszystkich procesów, dodajemy kontener wskaźników wydajności
-            const indicatorsContainer = document.createElement('div');
-            indicatorsContainer.id = 'performance-indicators-container';
-            managementContainer.appendChild(indicatorsContainer);
-
-            // Wczytywanie wskaźników wydajności
-            loadPerformanceIndicators();
-        })
-        .catch(error => console.error('Błąd:', error));
-
-        const form = document.getElementById('add-performance-indicator-form');
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = {
-                cycle_time: parseFloat(form.cycle_time.value),
-                downtime: parseFloat(form.downtime.value),
-                machine_efficiency: parseFloat(form.machine_efficiency.value),
-                product_quality: parseFloat(form.product_quality.value),
-            };
-
-            fetch('/api/performance_indicators', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                form.reset();
-                // Opcjonalnie: odśwież listę wskaźników wydajności.
             })
             .catch(error => console.error('Error:', error));
-        });
-}
+    }
 
-function loadPerformanceIndicators() {
-    console.log("Loading performance indicators...");
-    fetch('/api/performance_indicators')
-        .then(response => response.json())
-        .then(indicators => {
-            const indicatorsContainer = document.getElementById('performance-indicators-container');
-            indicators.forEach(indicator => {
-                const indicatorElement = document.createElement('div');
-                indicatorElement.className = 'indicator-card';
-                indicatorElement.innerHTML = `
-                    <h3>Data pomiaru: ${indicator.timestamp}</h3>
-                    <p>Czas cyklu: ${indicator.cycle_time} godzin</p>
-                    <p>Czas przestojów: ${indicator.downtime} godzin</p>
-                    <p>Wydajność maszyn: ${indicator.machine_efficiency}%</p>
-                    <p>Jakość wyrobów: ${indicator.product_quality}%</p><br>
-                `;
-                indicatorsContainer.appendChild(indicatorElement);
-            });
-        })
-        .catch(error => console.error('Error:', error));
-}
+    function loadPerformanceIndicators() {
+        const indicatorsContainer = document.getElementById('performance-indicators-container');
+        indicatorsContainer.innerHTML = ''; // Czyści istniejącą zawartość kontenera
+
+        fetch('/api/performance_indicators')
+            .then(response => response.json())
+            .then(indicators => {
+                indicators.forEach(indicator => {
+                    const indicatorElement = document.createElement('div');
+                    indicatorElement.className = 'indicator-card';
+                    indicatorElement.innerHTML = `
+                        <h3>Data pomiaru: ${indicator.timestamp}</h3>
+                        <p>Czas cyklu: ${indicator.cycle_time} godzin</p>
+                        <p>Czas przestojów: ${indicator.downtime} godzin</p>
+                        <p>Wydajność maszyn: ${indicator.machine_efficiency}%</p>
+                        <p>Jakość wyrobów: ${indicator.product_quality}%</p><br>
+                    `;
+                    indicatorsContainer.appendChild(indicatorElement);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+});
