@@ -62,9 +62,8 @@ class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_user_id'), nullable=False)
     position = db.Column(db.String(100), nullable=False)
-    shift_data = db.Column(db.Text, nullable=False)  # JSON z danymi o zmianach
+    shift_data = db.Column(db.Text, nullable=False)
 
-    # relacje
     employee = db.relationship('User', backref='schedule')
 
 
@@ -163,7 +162,7 @@ class QualityKPI(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     value = db.Column(db.Float, nullable=False)
-    trend = db.Column(db.String(10))  # przykład: 'up', 'down', 'stable'
+    trend = db.Column(db.String(10))
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -217,10 +216,10 @@ class ProcessOptimization(db.Model):
 
 class PerformanceIndicator(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    cycle_time = db.Column(db.Float, nullable=True)  # czas cyklu
-    downtime = db.Column(db.Float, nullable=True)  # czas przestojów
-    machine_efficiency = db.Column(db.Float, nullable=True)  # wydajność maszyn
-    product_quality = db.Column(db.Float, nullable=True)  # jakość wyrobów
+    cycle_time = db.Column(db.Float, nullable=True)
+    downtime = db.Column(db.Float, nullable=True)
+    machine_efficiency = db.Column(db.Float, nullable=True)
+    product_quality = db.Column(db.Float, nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __init__(self, cycle_time, downtime, machine_efficiency, product_quality):
@@ -443,10 +442,8 @@ def save_table():
         data = request.json
         print(data)
 
-        # Usuń istniejące wpisy (opcjonalnie, w zależności od logiki aplikacji)
         Schedule.query.delete()
 
-        # Zapisz nowe dane w bazie danych
         for row in data:
             new_schedule = Schedule(
                 employee_id=row['employee_id'],
@@ -458,7 +455,6 @@ def save_table():
 
         return jsonify({'status': 'success'})
     except Exception as e:
-        # Logowanie błędu
         print(f"Wystąpił błąd: {e}")
         return jsonify({'error': 'Wystąpił błąd podczas zapisywania danych'}), 500
 
@@ -499,7 +495,7 @@ def add_announcement():
     new_announcement = Announcement(
         title=data['title'],
         content=data['content'],
-        author_id=current_user.id,  # Zakładając, że korzystasz z Flask-Login
+        author_id=current_user.id,
         expiration_date=expiration_date
     )
     db.session.add(new_announcement)
@@ -555,17 +551,17 @@ def fetch_employees():
 @app.route('/api/schedule', methods=['GET'])
 @login_required
 def get_user_schedule():
-    employee_id = current_user.id  # Pobieranie ID zalogowanego użytkownika
-    start_date = datetime.today()  # Przykładowa data początkowa, tutaj: dzisiejsza data
-    dates = [(start_date + timedelta(days=i)).strftime('%d.%m.%Y') for i in range(7)]  # Lista dat dla 7 dni
+    employee_id = current_user.id
+    start_date = datetime.today()
+    dates = [(start_date + timedelta(days=i)).strftime('%d.%m.%Y') for i in range(7)]
 
     schedules = Schedule.query.filter_by(employee_id=employee_id).all()
 
     schedule_data = [
         {
             "position": schedule.position,
-            "shift_data": schedule.shift_data.split(','),  # Zakładam, że shift_data jest stringiem rozdzielonym przecinkami
-            "dates": dates  # Dodajemy listę dat
+            "shift_data": schedule.shift_data.split(','),
+            "dates": dates
         } for schedule in schedules
     ]
 
@@ -658,10 +654,8 @@ def get_documents():
     documents_list = []
 
     for doc in documents:
-        # Pełna ścieżka do pliku
         file_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], doc.file_path)
 
-        # Sprawdź, czy plik istnieje
         if os.path.exists(file_path):
             doc_url = url_for('static', filename=f'quali_docs/{doc.file_path}')
             documents_list.append({
@@ -679,7 +673,7 @@ def get_documents():
 def delete_document(doc_id):
     document = QualityDocument.query.get_or_404(doc_id)
     try:
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], document.file_path))  # Usuń plik z serwera
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], document.file_path))
         db.session.delete(document)
         db.session.commit()
         return jsonify({'message': 'Dokument został usunięty.'}), 200
@@ -704,7 +698,10 @@ def add_device():
 def get_devices():
     devices = Device.query.all()
     devices_data = [
-        {'id': device.id, 'device_id': device.device_id, 'name': device.name, 'description': device.description}
+        {'id': device.id,
+         'device_id': device.device_id,
+         'name': device.name,
+         'description': device.description}
         for device in devices
     ]
     return jsonify(devices_data)
@@ -727,7 +724,10 @@ def add_spare_part():
 def get_spare_parts():
     parts = SparePart.query.all()
     parts_data = [
-        {'id': part.id, 'part_id': part.part_id, 'name': part.name, 'quantity': part.quantity}
+        {'id': part.id,
+         'part_id': part.part_id,
+         'name': part.name,
+         'quantity': part.quantity}
         for part in parts
     ]
     return jsonify(parts_data)
@@ -746,7 +746,6 @@ def add_maintenance():
     return jsonify({'message': 'Maintenance scheduled successfully', 'id': new_maintenance.id}), 201
 
 
-# Endpoint do pobierania przeglądów/konserwacji
 @app.route('/api/maintenance', methods=['GET'])
 def get_maintenance():
     maintenances = Maintenance.query.all()
@@ -761,13 +760,21 @@ def get_maintenance():
 @app.route('/api/costs', methods=['GET'])
 def get_costs():
     costs = Cost.query.all()
-    return jsonify([{'id': cost.id, 'category': cost.category, 'amount': cost.amount, 'planbudget': cost.planbudget, 'date': cost.date.strftime('%Y-%m-%d'), 'description': cost.description} for cost in costs])
+    return jsonify([{'id': cost.id,
+                     'category': cost.category,
+                     'amount': cost.amount,
+                     'planbudget': cost.planbudget,
+                     'date': cost.date.strftime('%Y-%m-%d'),
+                     'description': cost.description} for cost in costs])
 
 
 @app.route('/api/costs', methods=['POST'])
 def add_cost():
     data = request.json
-    new_cost = Cost(category=data['category'], amount=data['amount'], planbudget=data['planbudget'], description=data['description'])
+    new_cost = Cost(category=data['category'],
+                    amount=data['amount'],
+                    planbudget=data['planbudget'],
+                    description=data['description'])
     db.session.add(new_cost)
     db.session.commit()
     return jsonify({'message': 'Cost added successfully'}), 201
@@ -782,7 +789,9 @@ def add_efficiency():
         measurement_date_string = data['measurementDate']
         measurement_date = datetime.strptime(measurement_date_string, '%Y-%m-%dT%H:%M')
 
-        new_record = MachineEfficiency(machineName=machine_name, usagePercentage=usage_percentage, measurementDate=measurement_date)
+        new_record = MachineEfficiency(machineName=machine_name,
+                                       usagePercentage=usage_percentage,
+                                       measurementDate=measurement_date)
         db.session.add(new_record)
         db.session.commit()
 
@@ -822,7 +831,10 @@ def add_material_consumption():
 @app.route('/getMaterialConsumption', methods=['GET'])
 def get_material_consumption():
     consumption_list = MaterialConsumption.query.all()
-    return jsonify([{'material_name': item.material_name, 'consumption_date': item.consumption_date.strftime('%Y-%m-%d'), 'quantity_consumed': item.quantity_consumed, 'unit_cost': item.unit_cost} for item in consumption_list])
+    return jsonify([{'material_name': item.material_name,
+                     'consumption_date': item.consumption_date.strftime('%Y-%m-%d'),
+                     'quantity_consumed': item.quantity_consumed,
+                     'unit_cost': item.unit_cost} for item in consumption_list])
 
 
 @app.route('/api/kpis', methods=['GET'])
@@ -851,7 +863,9 @@ def get_audits():
 @app.route('/api/quality-reports')
 def get_quality_reports():
     reports = QualityReport.query.all()
-    return jsonify([{"id": report.id, "report_type": report.report_type, "report_date": report.report_date.strftime('%Y-%m-%d'), "file_path": report.file_path} for report in reports])
+    return jsonify([{"id": report.id, "report_type": report.report_type,
+                     "report_date": report.report_date.strftime('%Y-%m-%d'),
+                     "file_path": report.file_path} for report in reports])
 
 
 @app.route('/api/quality-reports/<int:report_id>')
@@ -888,12 +902,10 @@ def add_process_optimization():
 @app.route('/api/performance_indicators', methods=['GET', 'POST'])
 def performance_indicators():
     if request.method == 'GET':
-        # Pobieranie wszystkich wskaźników z bazy danych
         indicators = PerformanceIndicator.query.all()
         return jsonify([indicator.serialize() for indicator in indicators])
 
     elif request.method == 'POST':
-        # Dodawanie nowego wskaźnika do bazy danych
         data = request.json
         try:
             new_indicator = PerformanceIndicator(

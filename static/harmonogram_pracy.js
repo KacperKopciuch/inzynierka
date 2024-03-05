@@ -2,24 +2,6 @@ document.getElementById('show-schedule').addEventListener('click', function() {
     fetchAndDisplayUserSchedule(); // Wywołanie nowej funkcji do ładowania harmonogramu
 });
 
-
-
-//function fetchAndDisplayUserSchedule() {
-//    fetch('/api/schedule') // Adres endpointu do zmiany na właściwy
-//        .then(response => response.json())
-//        .then(data => {
-//            let contentHtml = '<h2>Harmonogram zadań</h2>';
-//            data.forEach(schedule => {
-//                contentHtml += `
-//                    <div>
-//                        Pozycja: ${schedule.position}</br></br>Zmiany: ${schedule.shift_data}
-//                    </div>
-//                `;
-//            });
-//            document.getElementById('dynamic-content').innerHTML = contentHtml;
-//        })
-//        .catch(error => console.error('Error:', error));
-//}
 function fetchAndDisplayUserSchedule() {
     fetch('/api/schedule')
         .then(response => response.json())

@@ -73,7 +73,7 @@ function deleteDocument(docId) {
         .then(response => response.json())
         .then(data => {
             console.log(data.message);
-            fetchAndDisplayDocuments(); // Ponownie wczytaj listę dokumentów
+            fetchAndDisplayDocuments();
         })
         .catch(error => console.error('Error:', error));
     }
