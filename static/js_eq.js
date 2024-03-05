@@ -33,7 +33,7 @@ function showAddDeviceForm() {
             <input type="text" name="name" placeholder="Nazwa Urządzenia" required>
             <textarea name="description" placeholder="Opis"></textarea>
             <button type="submit">Zapisz urządzenie</button>
-        </form>
+        </form><br>
     `;
     const addDeviceForm = document.getElementById('add-device-form');
     addDeviceForm.addEventListener('submit', function(e) {
@@ -67,7 +67,8 @@ function showDevicesList() {
         const listContainer = document.getElementById('devices-list-container');
         listContainer.innerHTML = '<h4>Zarejestrowane Urządzenia:</h4>';
         devices.forEach(device => {
-            listContainer.innerHTML += `<p>ID: ${device.device_id}, Nazwa: ${device.name}, Opis: ${device.description}</p>`;
+            listContainer.innerHTML += `<p>ID: ${device.device_id}, Nazwa: ${device.name}, Opis: ${device.description}</p>
+            `;
         });
     })
     .catch(error => console.error('Error:', error));
@@ -76,11 +77,12 @@ function showDevicesList() {
 function loadSparePartsManagement() {
     const partsManagementContainer = document.getElementById('parts-management-container');
     partsManagementContainer.innerHTML = `
+        <br>
         <h3>Stan Magazynowy Części Zamiennych</h3>
         <button id="add-part-btn">Dodaj część zamienną</button>
         <button id="view-parts-btn">Wyświetl części zamienne</button>
         <div id="part-form-container"></div>
-        <div id="parts-list-container"></div>
+        <div id="parts-list-container"></div><br>
     `;
 
     document.getElementById('add-part-btn').addEventListener('click', showAddPartForm);

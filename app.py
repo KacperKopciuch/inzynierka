@@ -16,6 +16,7 @@ from config import Config
 from flask import send_from_directory
 import bcrypt
 import json
+import re
 
 from sqlalchemy.testing.pickleable import Order
 from werkzeug.utils import secure_filename
@@ -243,10 +244,6 @@ with app.app_context():
     db.create_all()
 
 
-# class ExtendedRegisterForm(ConfirmRegisterForm):
-#   password = PasswordField('Password', [Required(), Length(min=6), Regexp('...')])  # Dodaj wymagania dotyczące hasła
-
-# Register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -255,18 +252,25 @@ def register():
         password = request.form['password']
         confirm_password = request.form['confirm_password']
 
-        user_exists = User.query.filter_by(username=username).first()
-        email_exists = User.query.filter_by(email=email).first()
+        # Password strength validation
+        pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        if not re.match(pattern, password):
+            flash('Password must be at least 8 characters long and include at least one uppercase letter,'
+                  ' one lowercase letter, one number, and one special character.', 'error')
+            return redirect(url_for('register'))
 
         if password != confirm_password:
-            flash('Passwords are incorrect', 'error')
+            flash('Passwords do not match.', 'error')
             return redirect(url_for('register'))
+
+        user_exists = User.query.filter_by(username=username).first()
+        email_exists = User.query.filter_by(email=email).first()
 
         if user_exists or email_exists:
             flash('Username or Email already exists. Please choose a different one.', 'error')
             return redirect(url_for('register'))
 
-        role = request.form['role']
+        role = request.form.get('role', 'user')
 
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
@@ -275,7 +279,7 @@ def register():
         db.session.commit()
 
         flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('register'))
+        return redirect(url_for('login'))
 
     return render_template('register.html')
 
@@ -294,7 +298,6 @@ def login():
             next_page = request.args.get('next')
 
             if not next_page or urlparse(next_page).netloc != '':
-                # Użyj roli użytkownika do określenia przekierowania
                 return redirect(url_for(user.role))
 
             return redirect(next_page)
