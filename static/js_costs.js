@@ -2,16 +2,15 @@ function openNewTabWithContent(htmlContent, chartScript) {
     const newWindow = window.open();
     newWindow.document.open();
     newWindow.document.write(htmlContent);
-    newWindow.document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>'); // Dodajemy bibliotekę Chart.js
-    newWindow.document.write('<script>' + chartScript + '<\/script>'); // Dodajemy skrypt generujący wykres
+    newWindow.document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+    newWindow.document.write('<script>' + chartScript + '<\/script>');
     newWindow.document.close();
 }
 
 function loadCostManagementContent() {
-    const managementContainer = document.getElementById('dynamic-content'); // Zakładamy, że jest to kontener na dynamiczną treść
-    managementContainer.innerHTML = ''; // Czyszczenie zawartości kontenera
+    const managementContainer = document.getElementById('dynamic-content');
+    managementContainer.innerHTML = '';
 
-    // Tworzenie struktury HTML dla zarządzania kosztami
     const costContent = `
         <div id="cost-analysis-container">
             <h2>Analiza kosztów</h2>
@@ -65,7 +64,7 @@ function loadCostManagementContent() {
         </div>
         `;
 
-    managementContainer.innerHTML = costContent; // Dodawanie struktury HTML do kontenera
+    managementContainer.innerHTML = costContent;
 
     const comparisonButton = document.getElementById('btn-comparison');
     if (comparisonButton) {
@@ -77,7 +76,6 @@ function loadCostManagementContent() {
         efficiencyButton.addEventListener('click', loadEfficiencyReportContent);
     }
 
-    // Dodajemy tutaj kod JavaScript odpowiedzialny za obsługę formularza i ładowanie kosztów
     const form = document.getElementById('add-cost-form');
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -100,7 +98,7 @@ function loadCostManagementContent() {
         .then(data => {
             alert(data.message);
             form.reset();
-            fetchCosts(); // Odśwież listę kosztów
+            fetchCosts();
         })
         .catch(error => console.error('Error:', error));
     });
@@ -111,7 +109,6 @@ function loadCostManagementContent() {
         let object = {};
         const formData = new FormData(this);
         formData.forEach((value, key) => {
-            // Przekształć wszystkie wartości formularza w obiekt JavaScript
             object[key] = value;
         });
         let json = JSON.stringify(object);
@@ -132,7 +129,6 @@ function loadCostManagementContent() {
         .then(data => {
             efficiencyForm.reset();
             alert(data.message);
-            // Tutaj możesz dodać kod, aby zaktualizować interfejs użytkownika
         })
         .catch(error => {
             console.error('There has been a problem with your fetch operation:', error);
@@ -144,26 +140,23 @@ function loadCostManagementContent() {
         .then(response => response.json())
         .then(costs => {
             const listContainer = document.getElementById('costs-list-container');
-            listContainer.innerHTML = ''; // Czyszczenie listy
+            listContainer.innerHTML = '';
             costs.forEach(cost => {
-                // Dodawanie każdego kosztu do listy
                 listContainer.innerHTML += `<div class="cost-item">${cost.category}: ${cost.amount}zł, Planowany budżet: ${cost.planbudget}zł, Przedział czasowy do: ${cost.date}, Opis: ${cost.description}</div>`;
             });
         })
         .catch(error => console.error('Error:', error));
     }
 
-    fetchCosts(); // Początkowe załadowanie listy kosztów
+    fetchCosts();
 
     const materialConsumptionBtn = document.getElementById('material-consumption-btn');
     if (materialConsumptionBtn) {
         materialConsumptionBtn.addEventListener('click', function() {
             console.log('Przycisk zużycia materiałów został naciśnięty');
-            // Pobieranie danych z endpointu
             fetch('/getMaterialConsumption')
                 .then(response => response.json())
                 .then(data => {
-                    // Przygotowanie danych dla wykresu
                     const labels = data.map(item => `${item.consumption_date} (${item.material_name})`);
                     const dataQuantity = {
                         label: 'Zużyta ilość',
@@ -179,7 +172,6 @@ function loadCostManagementContent() {
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
                     };
-                    // Generowanie wykresu
                     generateMaterialConsumptionChart(labels, [dataQuantity, dataCost]);
                 })
                 .catch(error => {
@@ -193,8 +185,8 @@ function loadCostManagementContent() {
             <title>Raport efektywności</title>
             <style>
                 canvas {
-                    width: 800px;  /* Możesz dostosować */
-                    height: 400px; /* Możesz dostosować */
+                    width: 800px;
+                    height: 400px;
                 }
             </style>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Link do Chart.js -->
@@ -222,7 +214,7 @@ function loadCostManagementContent() {
             unit_cost: parseFloat(this.unit_cost.value),
         };
 
-        fetch('/addMaterialConsumption', { // Upewnij się, że endpoint pasuje do Twojego URL
+        fetch('/addMaterialConsumption', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -232,13 +224,11 @@ function loadCostManagementContent() {
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            // Opcjonalnie: odśwież wykres lub tabelę z danymi
         })
         .catch((error) => {
             console.error('Error:', error);
         });
 
-        // Czyszczenie formularza
         this.reset();
     });
 
@@ -327,7 +317,7 @@ function loadEfficiencyReportContent() {
                             beginAtZero: true
                         }
                     },
-                    maintainAspectRatio: false // Kontroluje rozmiar wykresu
+                    maintainAspectRatio: false
                 }
             });
         })
@@ -341,8 +331,8 @@ function loadEfficiencyReportContent() {
             <title>Raport efektywności</title>
             <style>
                 canvas {
-                    width: 800px;  /* Możesz dostosować */
-                    height: 400px; /* Możesz dostosować */
+                    width: 800px;
+                    height: 400px;
                 }
             </style>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Link do Chart.js -->
@@ -395,42 +385,36 @@ function generateEfficiencyChart(data) {
 }
 
 function generateMaterialConsumptionChart(dataLabels, dataSets) {
-    // Otwieranie nowego okna
     var newWindow = window.open('', '_blank');
     newWindow.document.title = "Material Consumption Chart";
 
-    // Tworzenie elementu canvas w nowym oknie
     var canvas = newWindow.document.createElement('canvas');
     canvas.id = 'materialConsumptionChart';
-    canvas.width = 50; // Możesz dostosować szerokość
-    canvas.height = 50; // Możesz dostosować wysokość
-    newWindow.document.body.innerHTML = ''; // Czyści poprzednią zawartość nowego okna
+    canvas.width = 50;
+    canvas.height = 50;
+    newWindow.document.body.innerHTML = '';
     newWindow.document.body.appendChild(canvas);
 
-    // Dodanie biblioteki Chart.js do nowego okna
     var scriptTag = newWindow.document.createElement('script');
     scriptTag.src = 'https://cdn.jsdelivr.net/npm/chart.js';
     newWindow.document.head.appendChild(scriptTag);
 
-    // Oczekiwanie na załadowanie skryptu Chart.js w nowym oknie
     scriptTag.onload = function () {
-        // Kontekst dla wykresu w nowym oknie
         var ctx = canvas.getContext('2d');
 
-        // Tworzenie wykresu w nowym oknie
         new Chart(ctx, {
-            type: 'bar', // zmiana z 'line' na 'bar' jeśli chcesz słupkowy
+            type: 'bar',
             data: {
-                labels: dataLabels, // etykiety osi X
+                labels: dataLabels,
                 datasets: dataSets
             },
             options: {
                 scales: {
                     y: {
-                        beginAtZero: true, // zaczynamy skalę od 0
+                        beginAtZero: true,
                         scaleLabel: {
                             display: true,
-                            labelString: material_name + ' (Ilość / Koszt)' // dodanie material_name do etykiety osi Y
+                            labelString: material_name + ' (Ilość / Koszt)'
                         }
                     },
                     x: {
@@ -455,6 +439,5 @@ function generateMaterialConsumptionChart(dataLabels, dataSets) {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Nasłuchiwanie kliknięcia dla pierwszego przycisku
     document.getElementById('cost-management-tab').addEventListener('click', loadCostManagementContent);
 });

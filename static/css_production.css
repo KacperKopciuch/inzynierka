@@ -41,48 +41,45 @@
         }
 
         #dynamic-content div {
-            background: #f0f0f0; /* jasnoszary tło dla każdego zadania */
-            margin: 10px 0; /* marginesy dookoła */
-            padding: 10px; /* padding wewnątrz */
-            border-radius: 5px; /* zaokrąglone rogi */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* subtelny cień */
+            background: #f0f0f0;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #dynamic-content h2 {
-            color: #333; /* ciemnoszary kolor tekstu dla nagłówka */
-            margin-bottom: 20px; /* margines poniżej nagłówka */
+            color: #333;
+            margin-bottom: 20px;
         }
 
-        /* Stylizacja tabeli */
         table {
-            width: 100%; /* Pełna szerokość dostępnego miejsca */
-            border-collapse: collapse; /* Usuwa podwójne ramki */
-            text-align: center; /* Wyrównanie tekstu do środka komórki */
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
         }
 
         th, td {
-            border: 1px solid #ddd; /* Cienka, solidna ramka dla nagłówków i komórek */
-            padding: 8px; /* Dodatkowa przestrzeń wokół tekstu w komórce */
+            border: 1px solid #ddd;
+            padding: 8px;
         }
 
         th {
-            background-color: #f4f4f4; /* Jasnoszary tło dla nagłówków */
-            color: #333; /* Ciemnoszary tekst */
+            background-color: #f4f4f4;
+            color: #333;
         }
 
-        /* Stylizacja wierszy tabeli */
         tr:nth-child(even) {
-            background-color: #f2f2f2; /* Alternatywne tło dla parzystych wierszy */
+            background-color: #f2f2f2;
         }
 
         tr:hover {
-            background-color: #ddd; /* Tło wiersza przy najechaniu myszką */
+            background-color: #ddd;
         }
 
-        /* Stylizacja komórek zaznaczonych */
         .selected {
-            background-color: #007bff !important; /* Niebieskie tło dla zaznaczonych komórek */
-            color: white !important; /* Biały tekst dla zaznaczonych komórek */
+            background-color: #007bff !important;
+            color: white !important;
         }
         table tr td.selected {
             background-color: #007bff !important;

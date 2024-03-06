@@ -25,7 +25,6 @@ export function createTableRows(data) {
 
 
         rowData.shift_data.forEach(shift => {
-            // Tworzenie komórki
             let cell = document.createElement('td');
             cell.contentEditable = "true";
             cell.className = shift === 'selected' ? 'selected' : '';
@@ -33,18 +32,16 @@ export function createTableRows(data) {
                 toggleCell(cell);
             });
 
-            // Dodanie komórki do wiersza
             row.appendChild(cell);
         });
 
-        // Dodanie wiersza do ciała tabeli
         tableBody.appendChild(row);
     });
 }
 
 export function getWeekDates() {
-    let current = new Date(); // Bieżąca data
-    let weekStart = new Date(current.setDate(current.getDate() - current.getDay() + 1)); // Ustawienie na poniedziałek
+    let current = new Date();
+    let weekStart = new Date(current.setDate(current.getDate() - current.getDay() + 1));
     let dates = [];
 
     for (let i = 0; i < 7; i++) {
@@ -87,7 +84,7 @@ export function addRow() {
 
         <td contenteditable="true">Nowe Stanowisko</td>
     `;
-    for (let j = 0; j < 7; j++) { // Dla każdego dnia tygodnia
+    for (let j = 0; j < 7; j++) {
         row.innerHTML += `
             <td contenteditable="true" onclick="toggleCell(this)"></td>
             <td contenteditable="true" onclick="toggleCell(this)"></td>
@@ -99,13 +96,11 @@ export function addRow() {
 
 export function saveTableData() {
     let table = document.getElementById('schedule-table');
-    let data = []; // Przechowuje dane z tabeli
+    let data = [];
 
-    // Iterowanie po wierszach tabeli i zbieranie danych (zaczynając od pierwszego wiersza danych, a nie nagłówka)
     for (let i = 1; i < table.rows.length; i++) {
         let row = table.rows[i];
         console.log(row)
-        // Pomiń wiersze, które są puste (na przykład wiersze z pustymi komórkami pracownika i stanowiska)
         if (row.cells[0].innerText.trim() === '' && row.cells[1].innerText.trim() === '') {
             continue;
         }
@@ -124,7 +119,6 @@ export function saveTableData() {
         data.push(rowData);
     }
 
-    // Wyślij dane na serwer
     fetch('/save_table', {
         method: 'POST',
         headers: {
@@ -183,8 +177,6 @@ export function deleteSelectedRows() {
     const selectedRows = document.querySelectorAll('.selected-row');
     const idsToDelete = Array.from(selectedRows).map(row => row.dataset.id);
 
-    // Tu możesz dodać kod do wysłania żądania do serwera, aby usunąć wiersze z bazy danych
-    // Przykład:
     fetch('/delete_rows', {
         method: 'POST',
         headers: {
@@ -195,11 +187,9 @@ export function deleteSelectedRows() {
     .then(response => response.json())
     .then(data => {
         console.log('Success:', data);
-        // Opcjonalnie: odśwież tabelę lub usuń wiersze z front-endu
     })
     .catch(error => console.error('Error:', error));
 
-    // Usuń zaznaczone wiersze z front-endu
     selectedRows.forEach(row => row.remove());
 }
 
@@ -283,7 +273,6 @@ export function deleteOrder(orderId) {
     .then(response => response.json())
     .then(data => {
         console.log(data.message);
-        // Opcjonalnie: odśwież listę zamówień po usunięciu
         fetchAndDisplayOrders();
     })
     .catch(error => console.error('Error:', error));

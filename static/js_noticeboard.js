@@ -3,7 +3,7 @@ function loadAnnouncements() {
         .then(response => response.json())
         .then(announcements => {
             const list = document.getElementById('announcement-list');
-            list.innerHTML = ''; // Czyszczenie listy przed dodaniem nowych ogłoszeń
+            list.innerHTML = '';
             announcements.forEach(announcement => {
                 const item = document.createElement('div');
                 item.classList.add('announcement-item');
@@ -50,9 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     margin-right: 5px;
                 }
 
-                #announcement-list {
-                    /* Dodatkowe style dla listy ogłoszeń */
-                }
             </style>
         <div id="announcement-board">
         <div class="top-bar">
@@ -80,7 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
         `;
 
-        // Dodajemy nasłuchiwacze zdarzeń
         document.getElementById('add-announcement-button').addEventListener('click', function() {
             document.getElementById('add-announcement-modal').style.display = 'block';
         });
@@ -89,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = document.getElementById('announcement-title').value;
             const content = document.getElementById('announcement-content').value;
 
-            // Wysyłanie danych do serwera
             fetch('/add_announcement', {
                 method: 'POST',
                 headers: {
@@ -105,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 console.log('Ogłoszenie dodane:', data);
-                // Opcjonalnie: odśwież listę ogłoszeń
                 loadAnnouncements();
             })
             .catch(error => {
@@ -113,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Ładowanie ogłoszeń po kliknięciu na przycisk tablicy ogłoszeń
         loadAnnouncements();
 
         document.getElementById('search-button').addEventListener('click', function() {

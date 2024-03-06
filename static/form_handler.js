@@ -1,4 +1,3 @@
-// form-handler.js
 console.log("External script loaded");
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('#production-planning-form form');

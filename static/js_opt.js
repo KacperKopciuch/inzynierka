@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const performanceContainer = document.getElementById('performance-indicators-container');
                 performanceContainer.style.display = performanceContainer.style.display === 'none' ? 'block' : 'none';
                 if (performanceContainer.style.display === 'block') {
-                    loadPerformanceIndicators(); // Ładuje wskaźniki tylko, gdy sekcja jest widoczna
+                    loadPerformanceIndicators();
                 }
             });
         }
@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function fetchExistingProcesses() {
         const optimizationContainer = document.getElementById('optimization-container');
-        optimizationContainer.innerHTML = ''; // Czyści istniejącą zawartość kontenera
+        optimizationContainer.innerHTML = '';
 
         fetch('/api/process_optimization')
             .then(response => response.json())
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function loadPerformanceIndicators() {
         const indicatorsContainer = document.getElementById('performance-indicators-container');
-        indicatorsContainer.innerHTML = ''; // Czyści istniejącą zawartość kontenera
+        indicatorsContainer.innerHTML = '';
 
         fetch('/api/performance_indicators')
             .then(response => response.json())

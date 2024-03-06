@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = '/static/css_docmanagement.css'; // Ustaw ścieżkę do Twojego pliku CSS
+        link.href = '/static/css_docmanagement.css';
         document.head.appendChild(link);
     document.getElementById('view-docs-button').addEventListener('click', function() {
         const dynamicContent = document.getElementById('dynamic-content');
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <!-- Lista dokumentów -->
             <div id="documents-list"></div>
         `;
-        fetchAndDisplayDocuments(); // Funkcja do pobierania i wyświetlania listy dokumentów
+        fetchAndDisplayDocuments();
     });
 });
 
@@ -18,9 +18,8 @@ function fetchAndDisplayDocuments() {
         .then(response => response.json())
         .then(documents => {
             const documentsList = document.getElementById('documents-list');
-            documentsList.innerHTML = ''; // Wyczyść istniejącą zawartość
+            documentsList.innerHTML = '';
 
-            // Iteracja po dokumentach i tworzenie elementów
             documents.forEach(doc => {
                 const docElement = document.createElement('div');
                 docElement.className = 'document-item';

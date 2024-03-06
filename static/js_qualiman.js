@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Definicja funkcji do ładowania treści zarządzania jakością
     function loadQualityManagementContent() {
         const managementContainer = document.getElementById('dynamic-content');
-        managementContainer.innerHTML = ''; // Wyczyszczenie zawartości
+        managementContainer.innerHTML = '';
 
         const header = document.createElement('h2');
         header.textContent = 'Zarządzanie jakością';
@@ -12,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function() {
         kpisContainer.id = 'kpis-container';
         managementContainer.appendChild(kpisContainer);
 
-        // Sekcja raportów
         const reportsSection = document.createElement('div');
         reportsSection.className = 'reports-section';
         reportsSection.innerHTML = `
@@ -22,7 +20,6 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
         managementContainer.appendChild(reportsSection);
 
-        // Sekcja dokumentacji
         const documentationSection = document.createElement('div');
         documentationSection.className = 'documentation-section';
         documentationSection.innerHTML = `
@@ -34,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
         managementContainer.appendChild(documentationSection);
 
-        // Sekcja harmonogramu audytów
         const auditsScheduleSection = document.createElement('div');
         auditsScheduleSection.className = 'audits-schedule-section list-style-none';
         auditsScheduleSection.id = 'audits-schedule-section';
@@ -47,7 +43,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         loadAuditsSchedule();
 
-        // Sekcja raportów
         const qualityReportsSection = document.createElement('div');
         qualityReportsSection.className = 'quality-reports-section';
         qualityReportsSection.id = 'quality-reports-section';
@@ -83,14 +78,14 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function loadAuditsSchedule() {
-        console.log("Loading audits schedule..."); // Debug
+        console.log("Loading audits schedule...");
         fetch('/api/audits')
             .then(response => {
-                console.log("Audits response received"); // Debug
+                console.log("Audits response received");
                 return response.json();
             })
             .then(audits => {
-                console.log("Audits data:", audits); // Debug
+                console.log("Audits data:", audits);
                 const auditsScheduleSection = document.getElementById('audits-schedule-section');
                 const list = document.createElement('ul');
                 audits.forEach(audit => {
@@ -101,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 auditsScheduleSection.appendChild(list);
             })
             .catch(error => {
-                console.error('Błąd:', error); // Debug
+                console.error('Błąd:', error);
             });
     }
 

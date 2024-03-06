@@ -1,6 +1,5 @@
 import os
 from flask import Flask, render_template, redirect, url_for, flash, request, session
-# from flask_security import SQLAlchemyUserDatastore, Security, ConfirmRegisterForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask import jsonify
@@ -18,11 +17,7 @@ import bcrypt
 import json
 import re
 
-from sqlalchemy.testing.pickleable import Order
 from werkzeug.utils import secure_filename
-
-# import logging
-# from wtforms import StringField
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -67,11 +62,6 @@ class Schedule(db.Model):
     employee = db.relationship('User', backref='schedule')
 
 
-# Utwórz tabelę w bazie danych, jeśli jeszcze nie istnieje
-with app.app_context():
-    db.create_all()
-
-
 class Announcement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -91,10 +81,6 @@ class ProductionPlan(db.Model):
 
     def __repr__(self):
         return f'<ProductionPlan {self.product_id}>'
-
-
-with app.app_context():
-    db.create_all()
 
 
 class QualityDocument(db.Model):
@@ -251,7 +237,6 @@ def register():
         password = request.form['password']
         confirm_password = request.form['confirm_password']
 
-        # Password strength validation
         pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
         if not re.match(pattern, password):
             flash('Password must be at least 8 characters long and include at least one uppercase letter,'
@@ -283,7 +268,6 @@ def register():
     return render_template('register.html')
 
 
-# LOGIN
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -487,7 +471,6 @@ def get_announcements():
 @login_required
 def add_announcement():
     data = request.get_json()
-    # Deklaracja i inicjalizacja expiration_date
     expiration_date = None
     if 'expirationDate' in data:
         expiration_date = datetime.strptime(data['expirationDate'], '%Y-%m-%d')
@@ -540,7 +523,6 @@ def secret_area():
 def fetch_employees():
     employees = User.query.all()
 
-    # Przetwarzamy dane o pracownikach na format JSON
     employee_data = [{"id": employee.id, "username": employee.username} for employee in employees]
 
     print(employees)
@@ -580,7 +562,10 @@ def submit_production_plan():
     deadline = datetime.strptime(request.form['deadline'], '%Y-%m-%d').date()
     completed_quantity = request.form['completed-quantity']
 
-    new_plan = ProductionPlan(product_id=product_id, quantity=int(quantity), deadline=deadline, completed_quantity=int(completed_quantity))
+    new_plan = ProductionPlan(product_id=product_id,
+                              quantity=int(quantity),
+                              deadline=deadline,
+                              completed_quantity=int(completed_quantity))
     db.session.add(new_plan)
     db.session.commit()
 

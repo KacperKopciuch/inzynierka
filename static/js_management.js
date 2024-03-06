@@ -1,4 +1,3 @@
-// Import funkcji z zewnętrznego pliku JavaScript
 import {
     createTableRows,
     getWeekDates,
@@ -18,12 +17,10 @@ import {
     deleteOrder
 } from './functions.js';
 
-// Przypisanie globalne funkcji do obiektu window
 window.toggleCell = toggleCell;
 window.editQuantity = editQuantity;
 window.deleteOrder = deleteOrder;
 
-// Główny blok kodu uruchamiany po załadowaniu DOM
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/get_table_data')
         .then(response => response.json())
@@ -34,20 +31,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error:', error));
 
-    // Przypisanie zdarzenia do przycisku usuwania wierszy
     const deleteRowButton = document.getElementById('delete-row-button');
     if (deleteRowButton) {
         deleteRowButton.addEventListener('click', deleteSelectedRows);
     }
 });
 
-// Dodanie zdarzenia do przycisku planowania
 document.getElementById('planning-button').addEventListener('click', function() {
     fetch('/api/production-planning')
         .then(response => response.text())
         .then(html => {
             document.getElementById('dynamic-content').innerHTML = html;
-            // Teraz, kiedy nowy formularz został wstrzyknięty, musimy zainicjować obsługę formularza
             initializeFormHandler();
             fetchAndDisplayOrders();
         })
@@ -73,7 +67,7 @@ function initializeFormHandler() {
             })
             .then(data => {
                 console.log('Success:', data);
-                alert(data.message); // or update the DOM with the response
+                alert(data.message);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -84,16 +78,14 @@ function initializeFormHandler() {
     }
 }
 
-// Dodanie zdarzenia do przycisku wylogowania
 document.getElementById('logout-button').addEventListener('click', function() {
     fetch('/logout', {
         method: 'POST'
     }).then(response => {
-        window.location.href = '/login'; // Przekierowanie do strony logowania
+        window.location.href = '/login';
     }).catch(error => console.error('Error:', error));
 });
 
-// Zarządzanie personelem i manipulacja zawartością dynamiczną
 document.getElementById('manage-personnel').addEventListener('click', function() {
     var container = document.getElementById('dynamic-content');
     container.innerHTML = `
@@ -114,11 +106,11 @@ document.getElementById('manage-personnel').addEventListener('click', function()
                 background-color: #fff;
             }
             .selected {
-                background-color: #007bff; /* Niebieski kolor */
-                color: white; /* Biały tekst dla lepszej czytelności */
+                background-color: #007bff;
+                color: white;
             }
             .selected-row {
-                background-color: #add8e6; /* Jasnoniebieski kolor dla zaznaczonych wierszy */
+                background-color: #add8e6;
             }
         </style>
         <table id="schedule-table">
@@ -132,12 +124,10 @@ document.getElementById('manage-personnel').addEventListener('click', function()
         <button id="delete-row-button">Usuń wiersz</button>
     `;
 
-    // Aktualizacja nagłówków i dodanie obsługi zdarzeń
     updateTableHeaders();
     addEventListeners();
     fetchAndFillTable();
 
-    // Dodanie zdarzeń dla nowych przycisków
     document.getElementById('add-row-button').addEventListener('click', addRow);
     document.getElementById('save-data-button').addEventListener('click', saveTableData);
     document.getElementById('select-row-button').addEventListener('click', enableSelecting);

@@ -40,11 +40,11 @@ body {
         }
 
         .maintenance-item {
-            margin-bottom: 15px; /* Doda margines na dole każdego elementu */
-            padding: 10px; /* Doda padding wewnątrz każdego elementu */
-            border: 1px solid #ccc; /* Opcjonalnie, dodaje obramowanie dookoła każdego elementu */
-            border-radius: 5px; /* Opcjonalnie, zaokrągla rogi obramowania */
-            background-color: #f9f9f9; /* Opcjonalnie, dodaje tło każdemu elementowi */
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
 
         input[type="text"],
@@ -96,7 +96,6 @@ body {
           color: white;
         }
 
-        /* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
         @media screen and (max-width: 600px) {
           .column {
             width: 100%;

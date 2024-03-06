@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const maintenanceBtn = document.getElementById('maintenance-btn'); // Id przycisku 'utrzymanie sprzętu'
+    const maintenanceBtn = document.getElementById('maintenance-btn');
     const dynamicContent = document.getElementById('dynamic-content');
 
     maintenanceBtn.addEventListener('click', function() {
@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div id="maintenance-planning-container"></div>
         `;
 
-        // Nasłuch na nowo dodane przyciski
         document.getElementById('add-device-btn').addEventListener('click', showAddDeviceForm);
         document.getElementById('view-devices-btn').addEventListener('click', showDevicesList);
         document.getElementById('inventory-btn').addEventListener('click', loadSparePartsManagement);
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Funkcja wyświetlająca formularz dodawania urządzenia
 function showAddDeviceForm() {
     const formContainer = document.getElementById('device-form-container');
     formContainer.innerHTML = `
@@ -53,13 +51,12 @@ function showAddDeviceForm() {
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            showDevicesList(); // Odśwież listę urządzeń
+            showDevicesList();
         })
         .catch(error => console.error('Error:', error));
     });
 }
 
-// Funkcja wyświetlająca listę urządzeń
 function showDevicesList() {
     fetch('/api/devices')
     .then(response => response.json())
@@ -89,7 +86,6 @@ function loadSparePartsManagement() {
     document.getElementById('view-parts-btn').addEventListener('click', showPartsList);
 }
 
-// Funkcja wyświetlająca formularz dodawania części zamiennej
 function showAddPartForm() {
     const formContainer = document.getElementById('part-form-container');
     formContainer.innerHTML = `
@@ -119,13 +115,12 @@ function showAddPartForm() {
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            showPartsList(); // Odśwież listę części
+            showPartsList();
         })
         .catch(error => console.error('Error:', error));
     });
 }
 
-// Funkcja wyświetlająca listę części zamiennych
 function showPartsList() {
     fetch('/api/spare-parts')
     .then(response => response.json())
@@ -179,7 +174,6 @@ function loadMaintenanceManagement() {
     dynamicContent.appendChild(maintenanceManagementContainer);
 
 
-    // Obsługa przycisku dodawania przeglądu/konserwacji
     document.getElementById('add-maintenance-btn').addEventListener('click', function() {
         const maintenanceFormContainer = document.getElementById('maintenance-form-container');
         maintenanceFormContainer.innerHTML = `
@@ -191,7 +185,6 @@ function loadMaintenanceManagement() {
             </form>
         `;
 
-        // Obsługa zdarzenia submit formularza dodawania przeglądu/konserwacji
         document.getElementById('add-maintenance-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -201,7 +194,6 @@ function loadMaintenanceManagement() {
                 description: formData.get('description')
             };
 
-            // Wywołanie API do dodawania nowego przeglądu/konserwacji
             fetch('/api/maintenance', {
                 method: 'POST',
                 headers: {
@@ -212,7 +204,7 @@ function loadMaintenanceManagement() {
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                loadMaintenanceList(); // Odświeżenie listy przeglądów/konserwacji
+                loadMaintenanceList();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -221,5 +213,5 @@ function loadMaintenanceManagement() {
         });
     });
 
-    loadMaintenanceList(); // Załadowanie listy przeglądów/konserwacji przy inicjalizacji
+    loadMaintenanceList();
 }
